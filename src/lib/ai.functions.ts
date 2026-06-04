@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
+
 
 const MODEL = "google/gemini-3-flash-preview";
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
@@ -138,4 +138,4 @@ Return markdown:
     return { markdown: await callAI({ system: sys, user }) };
   });
 
-void z;
+
