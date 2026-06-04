@@ -14,7 +14,370 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      actions: {
+        Row: {
+          completed_at: string | null
+          contact_id: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          status: string
+          title: string
+          urgency: string
+        }
+        Insert: {
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          status?: string
+          title: string
+          urgency?: string
+        }
+        Update: {
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          status?: string
+          title?: string
+          urgency?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "actions_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      activities: {
+        Row: {
+          contact_id: string
+          created_at: string
+          details: string | null
+          id: string
+          kind: string
+          occurred_at: string
+          sentiment: string | null
+          summary: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          kind: string
+          occurred_at?: string
+          sentiment?: string | null
+          summary: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          kind?: string
+          occurred_at?: string
+          sentiment?: string | null
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contacts: {
+        Row: {
+          company: string | null
+          created_at: string
+          email: string | null
+          folder: string
+          health_score: number
+          id: string
+          industry: string | null
+          last_contact_date: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          role: string | null
+          tags: string[]
+          type: string
+          updated_at: string
+          urgent: boolean
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          folder: string
+          health_score?: number
+          id?: string
+          industry?: string | null
+          last_contact_date?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          role?: string | null
+          tags?: string[]
+          type: string
+          updated_at?: string
+          urgent?: boolean
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          folder?: string
+          health_score?: number
+          id?: string
+          industry?: string | null
+          last_contact_date?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          role?: string | null
+          tags?: string[]
+          type?: string
+          updated_at?: string
+          urgent?: boolean
+        }
+        Relationships: []
+      }
+      events: {
+        Row: {
+          created_at: string
+          event_date: string
+          event_type: string
+          id: string
+          linked_contact_ids: string[]
+          name: string
+          notes: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          event_date: string
+          event_type: string
+          id?: string
+          linked_contact_ids?: string[]
+          name: string
+          notes?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          event_date?: string
+          event_type?: string
+          id?: string
+          linked_contact_ids?: string[]
+          name?: string
+          notes?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      intelligence_items: {
+        Row: {
+          contact_ids: string[]
+          created_at: string
+          extracted: Json
+          id: string
+          raw_input: string
+          sentiment: string | null
+          source: string
+          summary: string | null
+          topics: string[]
+          urgency: string | null
+        }
+        Insert: {
+          contact_ids?: string[]
+          created_at?: string
+          extracted?: Json
+          id?: string
+          raw_input: string
+          sentiment?: string | null
+          source?: string
+          summary?: string | null
+          topics?: string[]
+          urgency?: string | null
+        }
+        Update: {
+          contact_ids?: string[]
+          created_at?: string
+          extracted?: Json
+          id?: string
+          raw_input?: string
+          sentiment?: string | null
+          source?: string
+          summary?: string | null
+          topics?: string[]
+          urgency?: string | null
+        }
+        Relationships: []
+      }
+      loan_equipment: {
+        Row: {
+          actual_return_date: string | null
+          contact_id: string | null
+          created_at: string
+          date_out: string
+          expected_return_date: string | null
+          id: string
+          notes: string | null
+          product_name: string
+          serial_number: string
+          status: string
+        }
+        Insert: {
+          actual_return_date?: string | null
+          contact_id?: string | null
+          created_at?: string
+          date_out?: string
+          expected_return_date?: string | null
+          id?: string
+          notes?: string | null
+          product_name: string
+          serial_number: string
+          status?: string
+        }
+        Update: {
+          actual_return_date?: string | null
+          contact_id?: string | null
+          created_at?: string
+          date_out?: string
+          expected_return_date?: string | null
+          id?: string
+          notes?: string | null
+          product_name?: string
+          serial_number?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loan_equipment_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotes: {
+        Row: {
+          channel: string
+          company: string | null
+          contact_id: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          products: string | null
+          quote_date: string
+          quote_ref: string
+          stage: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          channel?: string
+          company?: string | null
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          products?: string | null
+          quote_date?: string
+          quote_ref: string
+          stage?: string
+          updated_at?: string
+          value?: number
+        }
+        Update: {
+          channel?: string
+          company?: string | null
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          products?: string | null
+          quote_date?: string
+          quote_ref?: string
+          stage?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          contact_id: string | null
+          created_at: string
+          equipment_serial: string | null
+          id: string
+          issue: string
+          priority: string
+          resolution_notes: string | null
+          status: string
+          ticket_number: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          contact_id?: string | null
+          created_at?: string
+          equipment_serial?: string | null
+          id?: string
+          issue: string
+          priority?: string
+          resolution_notes?: string | null
+          status?: string
+          ticket_number: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          contact_id?: string | null
+          created_at?: string
+          equipment_serial?: string | null
+          id?: string
+          issue?: string
+          priority?: string
+          resolution_notes?: string | null
+          status?: string
+          ticket_number?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
