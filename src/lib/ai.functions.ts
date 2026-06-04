@@ -1,39 +1,41 @@
 import { createServerFn } from "@tanstack/react-start";
 
 
-const MODEL = "google/gemini-3-flash-preview";
-const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const MODEL = "claude-sonnet-4-20250514";
+const ENDPOINT = "https://api.anthropic.com/v1/messages";
 
 async function callAI(opts: {
   system: string;
   user: string;
   json?: boolean;
 }): Promise<string> {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("Missing LOVABLE_API_KEY");
-  const res = await fetch(GATEWAY, {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) throw new Error("Missing ANTHROPIC_API_KEY");
+  const userContent = opts.json
+    ? `${opts.user}\n\nRespond with ONLY a valid JSON object, no prose, no code fences.`
+    : opts.user;
+  const res = await fetch(ENDPOINT, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
+      "x-api-key": key,
+      "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
       model: MODEL,
-      messages: [
-        { role: "system", content: opts.system },
-        { role: "user", content: opts.user },
-      ],
-      ...(opts.json ? { response_format: { type: "json_object" } } : {}),
+      max_tokens: 4096,
+      system: opts.system,
+      messages: [{ role: "user", content: userContent }],
     }),
   });
   if (!res.ok) {
     const text = await res.text();
     if (res.status === 429) throw new Error("AI rate limit — try again shortly.");
-    if (res.status === 402) throw new Error("AI credits exhausted. Top up workspace credits.");
+    if (res.status === 402) throw new Error("AI credits exhausted.");
     throw new Error(`AI error ${res.status}: ${text.slice(0, 200)}`);
   }
   const data = await res.json();
-  return data?.choices?.[0]?.message?.content ?? "";
+  return data?.content?.[0]?.text ?? "";
 }
 
 function safeJSON<T>(s: string, fallback: T): T {
