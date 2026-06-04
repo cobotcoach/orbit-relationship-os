@@ -9,38 +9,161 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PipelineRouteImport } from './routes/pipeline'
+import { Route as OperationsRouteImport } from './routes/operations'
+import { Route as IntelRouteImport } from './routes/intel'
+import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ContactsIndexRouteImport } from './routes/contacts.index'
+import { Route as ContactsNewRouteImport } from './routes/contacts.new'
+import { Route as ContactsIdRouteImport } from './routes/contacts.$id'
 
+const PipelineRoute = PipelineRouteImport.update({
+  id: '/pipeline',
+  path: '/pipeline',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OperationsRoute = OperationsRouteImport.update({
+  id: '/operations',
+  path: '/operations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntelRoute = IntelRouteImport.update({
+  id: '/intel',
+  path: '/intel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InboxRoute = InboxRouteImport.update({
+  id: '/inbox',
+  path: '/inbox',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactsIndexRoute = ContactsIndexRouteImport.update({
+  id: '/contacts/',
+  path: '/contacts/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactsNewRoute = ContactsNewRouteImport.update({
+  id: '/contacts/new',
+  path: '/contacts/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactsIdRoute = ContactsIdRouteImport.update({
+  id: '/contacts/$id',
+  path: '/contacts/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/inbox': typeof InboxRoute
+  '/intel': typeof IntelRoute
+  '/operations': typeof OperationsRoute
+  '/pipeline': typeof PipelineRoute
+  '/contacts/$id': typeof ContactsIdRoute
+  '/contacts/new': typeof ContactsNewRoute
+  '/contacts/': typeof ContactsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/inbox': typeof InboxRoute
+  '/intel': typeof IntelRoute
+  '/operations': typeof OperationsRoute
+  '/pipeline': typeof PipelineRoute
+  '/contacts/$id': typeof ContactsIdRoute
+  '/contacts/new': typeof ContactsNewRoute
+  '/contacts': typeof ContactsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/inbox': typeof InboxRoute
+  '/intel': typeof IntelRoute
+  '/operations': typeof OperationsRoute
+  '/pipeline': typeof PipelineRoute
+  '/contacts/$id': typeof ContactsIdRoute
+  '/contacts/new': typeof ContactsNewRoute
+  '/contacts/': typeof ContactsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/inbox'
+    | '/intel'
+    | '/operations'
+    | '/pipeline'
+    | '/contacts/$id'
+    | '/contacts/new'
+    | '/contacts/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/inbox'
+    | '/intel'
+    | '/operations'
+    | '/pipeline'
+    | '/contacts/$id'
+    | '/contacts/new'
+    | '/contacts'
+  id:
+    | '__root__'
+    | '/'
+    | '/inbox'
+    | '/intel'
+    | '/operations'
+    | '/pipeline'
+    | '/contacts/$id'
+    | '/contacts/new'
+    | '/contacts/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  InboxRoute: typeof InboxRoute
+  IntelRoute: typeof IntelRoute
+  OperationsRoute: typeof OperationsRoute
+  PipelineRoute: typeof PipelineRoute
+  ContactsIdRoute: typeof ContactsIdRoute
+  ContactsNewRoute: typeof ContactsNewRoute
+  ContactsIndexRoute: typeof ContactsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/pipeline': {
+      id: '/pipeline'
+      path: '/pipeline'
+      fullPath: '/pipeline'
+      preLoaderRoute: typeof PipelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/operations': {
+      id: '/operations'
+      path: '/operations'
+      fullPath: '/operations'
+      preLoaderRoute: typeof OperationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intel': {
+      id: '/intel'
+      path: '/intel'
+      fullPath: '/intel'
+      preLoaderRoute: typeof IntelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inbox': {
+      id: '/inbox'
+      path: '/inbox'
+      fullPath: '/inbox'
+      preLoaderRoute: typeof InboxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +171,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contacts/': {
+      id: '/contacts/'
+      path: '/contacts'
+      fullPath: '/contacts/'
+      preLoaderRoute: typeof ContactsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contacts/new': {
+      id: '/contacts/new'
+      path: '/contacts/new'
+      fullPath: '/contacts/new'
+      preLoaderRoute: typeof ContactsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contacts/$id': {
+      id: '/contacts/$id'
+      path: '/contacts/$id'
+      fullPath: '/contacts/$id'
+      preLoaderRoute: typeof ContactsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  InboxRoute: InboxRoute,
+  IntelRoute: IntelRoute,
+  OperationsRoute: OperationsRoute,
+  PipelineRoute: PipelineRoute,
+  ContactsIdRoute: ContactsIdRoute,
+  ContactsNewRoute: ContactsNewRoute,
+  ContactsIndexRoute: ContactsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
