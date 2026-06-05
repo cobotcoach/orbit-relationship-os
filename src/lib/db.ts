@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Contact, Activity, Action, Quote, AppEvent, LoanEquipment, SupportTicket, IntelligenceItem } from "./types";
+import type { Contact, Activity, Action, Quote, AppEvent, LoanEquipment, SupportTicket, IntelligenceItem, SmartTopic } from "./types";
 
 export const db = {
   contacts: {
@@ -108,6 +108,28 @@ export const db = {
     insert: async (i: Partial<IntelligenceItem>): Promise<IntelligenceItem> => {
       const { data, error } = await supabase.from("intelligence_items").insert(i as never).select().single();
       if (error) throw error; return data as IntelligenceItem;
+    },
+  },
+  topics: {
+    list: async (): Promise<SmartTopic[]> => {
+      const { data, error } = await supabase.from("smart_topics").select("*").order("last_activity", { ascending: false });
+      if (error) throw error; return (data ?? []) as SmartTopic[];
+    },
+    forContact: async (contact_id: string): Promise<SmartTopic[]> => {
+      const { data, error } = await supabase.from("smart_topics").select("*").eq("contact_id", contact_id).order("last_activity", { ascending: false });
+      if (error) throw error; return (data ?? []) as SmartTopic[];
+    },
+    insert: async (t: Partial<SmartTopic>): Promise<SmartTopic> => {
+      const { data, error } = await supabase.from("smart_topics").insert(t as never).select().single();
+      if (error) throw error; return data as SmartTopic;
+    },
+    update: async (id: string, patch: Partial<SmartTopic>): Promise<void> => {
+      const { error } = await supabase.from("smart_topics").update(patch as never).eq("id", id);
+      if (error) throw error;
+    },
+    remove: async (id: string): Promise<void> => {
+      const { error } = await supabase.from("smart_topics").delete().eq("id", id);
+      if (error) throw error;
     },
   },
 };

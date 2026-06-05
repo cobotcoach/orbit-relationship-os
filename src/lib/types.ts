@@ -114,6 +114,23 @@ export interface IntelligenceItem {
   created_at: string;
 }
 
+export type TopicStatus = "waiting_on_them" | "waiting_on_you" | "active" | "stalled" | "resolved";
+
+export interface SmartTopic {
+  id: string;
+  title: string;
+  contact_id: string | null;
+  status: TopicStatus;
+  last_update: string | null;
+  opened_at: string;
+  last_activity: string;
+  next_action: string | null;
+  source: "manual" | "inbox" | "plaud" | string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export const CONTACT_TYPES: { value: ContactType; label: string }[] = [
   { value: "channel_partner", label: "Channel Partners" },
   { value: "end_user", label: "End Users" },
