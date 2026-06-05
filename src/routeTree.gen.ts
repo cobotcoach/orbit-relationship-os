@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as PipelineRouteImport } from './routes/pipeline'
 import { Route as OperationsRouteImport } from './routes/operations'
 import { Route as IntelRouteImport } from './routes/intel'
@@ -18,6 +19,11 @@ import { Route as ContactsIndexRouteImport } from './routes/contacts.index'
 import { Route as ContactsNewRouteImport } from './routes/contacts.new'
 import { Route as ContactsIdRouteImport } from './routes/contacts.$id'
 
+const TasksRoute = TasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PipelineRoute = PipelineRouteImport.update({
   id: '/pipeline',
   path: '/pipeline',
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/intel': typeof IntelRoute
   '/operations': typeof OperationsRoute
   '/pipeline': typeof PipelineRoute
+  '/tasks': typeof TasksRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
   '/contacts/': typeof ContactsIndexRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/intel': typeof IntelRoute
   '/operations': typeof OperationsRoute
   '/pipeline': typeof PipelineRoute
+  '/tasks': typeof TasksRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
   '/contacts': typeof ContactsIndexRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/intel': typeof IntelRoute
   '/operations': typeof OperationsRoute
   '/pipeline': typeof PipelineRoute
+  '/tasks': typeof TasksRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
   '/contacts/': typeof ContactsIndexRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/intel'
     | '/operations'
     | '/pipeline'
+    | '/tasks'
     | '/contacts/$id'
     | '/contacts/new'
     | '/contacts/'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/intel'
     | '/operations'
     | '/pipeline'
+    | '/tasks'
     | '/contacts/$id'
     | '/contacts/new'
     | '/contacts'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/intel'
     | '/operations'
     | '/pipeline'
+    | '/tasks'
     | '/contacts/$id'
     | '/contacts/new'
     | '/contacts/'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   IntelRoute: typeof IntelRoute
   OperationsRoute: typeof OperationsRoute
   PipelineRoute: typeof PipelineRoute
+  TasksRoute: typeof TasksRoute
   ContactsIdRoute: typeof ContactsIdRoute
   ContactsNewRoute: typeof ContactsNewRoute
   ContactsIndexRoute: typeof ContactsIndexRoute
@@ -136,6 +149,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tasks': {
+      id: '/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof TasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pipeline': {
       id: '/pipeline'
       path: '/pipeline'
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntelRoute: IntelRoute,
   OperationsRoute: OperationsRoute,
   PipelineRoute: PipelineRoute,
+  TasksRoute: TasksRoute,
   ContactsIdRoute: ContactsIdRoute,
   ContactsNewRoute: ContactsNewRoute,
   ContactsIndexRoute: ContactsIndexRoute,

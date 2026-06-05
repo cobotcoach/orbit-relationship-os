@@ -140,4 +140,16 @@ Return markdown:
     return { markdown: await callAI({ system: sys, user }) };
   });
 
+// 5. Prioritise tasks
+export const prioritiseTasks = createServerFn({ method: "POST" })
+  .inputValidator((d: { tasks: unknown[]; contacts: unknown[] }) => d)
+  .handler(async ({ data }) => {
+    const sys = `You are ORBIT, advising Richard (UK Country Manager, Dobot Robotics). Reorder the open tasks by strategic priority — weighting urgency, due dates, contact health (low health = more urgent), and channel-partner momentum.
+Return JSON: { "ordered_ids": string[] (every task id, most important first), "summary": "1-2 sentence morning briefing covering the top focus today" }.`;
+    const user = `TASKS:\n${JSON.stringify(data.tasks, null, 2)}\n\nCONTACTS:\n${JSON.stringify(data.contacts, null, 2)}`;
+    const raw = await callAI({ system: sys, user, json: true });
+    return safeJSON(raw, { ordered_ids: [] as string[], summary: "" });
+  });
+
+
 
