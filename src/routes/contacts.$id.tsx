@@ -23,6 +23,7 @@ function ContactDetail() {
   const actions = useQuery({ queryKey: ["actions", id], queryFn: () => db.actions.forContact(id) });
   const quotes = useQuery({ queryKey: ["quotes-c", id], queryFn: () => db.quotes.forContact(id) });
   const tickets = useQuery({ queryKey: ["tickets-c", id], queryFn: () => db.tickets.forContact(id) });
+  const topics = useQuery({ queryKey: ["topics-c", id], queryFn: () => db.topics.forContact(id) });
   const allLoans = useQuery({ queryKey: ["loans"], queryFn: db.loans.list });
   const loans = (allLoans.data ?? []).filter(l => l.contact_id === id);
 
@@ -121,6 +122,23 @@ function ContactDetail() {
           <Markdown>{strategyMd}</Markdown>
         </div>
       )}
+
+      <Section title="Open topics">
+        {(topics.data ?? []).filter(t => t.status !== "resolved").length === 0 ? <EmptyState title="No open topics" /> : (
+          <div className="space-y-1.5">
+            {(topics.data ?? []).filter(t => t.status !== "resolved").map(t => (
+              <div key={t.id} className="p-2.5 rounded-lg bg-card border border-border">
+                <div className="flex justify-between gap-2">
+                  <p className="text-sm font-medium">{t.title}</p>
+                  <Pill tone={t.status === "waiting_on_you" ? "urgent" : t.status === "waiting_on_them" ? "warning" : t.status === "stalled" ? "muted" : "success"}>{t.status.replace(/_/g, " ")}</Pill>
+                </div>
+                {t.last_update && <p className="text-xs text-muted-foreground mt-1">{t.last_update}</p>}
+                {t.next_action && <p className="text-xs text-foreground/90 mt-1">→ {t.next_action}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+      </Section>
 
       <Section title="Open actions">
         <div className="space-y-1.5">

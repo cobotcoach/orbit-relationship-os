@@ -228,5 +228,46 @@ Deduplicate within your response. Skip generic role accounts (noreply@, info@). 
     return merged;
   });
 
+// 7. Refresh Smart Topics from new text (email/transcript)
+type TopicRefreshResult = {
+  updates: { id: string; status?: string; last_update?: string; next_action?: string | null; resolved?: boolean }[];
+  new_topics: { title: string; contact_hint: string | null; status: string; last_update: string; next_action: string | null }[];
+  summary: string;
+};
+
+export const refreshTopicsFromText = createServerFn({ method: "POST" })
+  .inputValidator((d: {
+    text: string;
+    topics: { id: string; title: string; status: string; contact_name: string | null; last_update: string | null }[];
+    contacts: { id: string; name: string; company: string | null }[];
+  }) => d)
+  .handler(async ({ data }) => {
+    const sys = `You are ORBIT, an AI relationship OS for Dobot Robotics UK. You manage Smart Topics — open situations/threads tied to contacts (not tasks).
+A new email or meeting transcript has arrived. Update existing topics, create new ones, and mark resolved ones.
+Statuses: waiting_on_them, waiting_on_you, active, stalled, resolved.
+
+Return JSON:
+{
+  "updates": [{ "id": existing topic id, "status"?: new status, "last_update"?: short one-line update text, "next_action"?: string|null, "resolved"?: boolean }],
+  "new_topics": [{ "title": short topic title, "contact_hint": name/email of related contact or null, "status": one of above, "last_update": one-line summary, "next_action": string|null }],
+  "summary": "1-2 sentence diff describing what changed overall"
+}
+Be conservative — only update topics if the text genuinely speaks to them. Always include a last_update when updating.`;
+    const user = `EXISTING TOPICS:\n${JSON.stringify(data.topics, null, 2)}\n\nCONTACTS:\n${JSON.stringify(data.contacts, null, 2)}\n\nNEW INPUT:\n${data.text}`;
+    const raw = await callAI({ system: sys, user, json: true });
+    return safeJSON<TopicRefreshResult>(raw, { updates: [], new_topics: [], summary: "" });
+  });
+
+// 8. Extract topics from a paste (quick-add)
+export const extractTopicsFromText = createServerFn({ method: "POST" })
+  .inputValidator((d: { text: string; contacts: { id: string; name: string; company: string | null }[] }) => d)
+  .handler(async ({ data }) => {
+    const sys = `You are ORBIT. Extract Smart Topics (open situations/threads) from the supplied text. Each topic = one ongoing thing tied to a contact.
+Return JSON: { "topics": [{ "title": short, "contact_hint": name|null, "status": one of [waiting_on_them, waiting_on_you, active, stalled], "last_update": one-line, "next_action": string|null }] }`;
+    const user = `CONTACTS:\n${JSON.stringify(data.contacts, null, 2)}\n\nTEXT:\n${data.text}`;
+    const raw = await callAI({ system: sys, user, json: true });
+    return safeJSON(raw, { topics: [] as { title: string; contact_hint: string | null; status: string; last_update: string; next_action: string | null }[] });
+  });
+
 
 

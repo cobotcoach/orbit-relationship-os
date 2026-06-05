@@ -9,7 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TasksRouteImport } from './routes/tasks'
+import { Route as TopicsRouteImport } from './routes/topics'
 import { Route as PipelineRouteImport } from './routes/pipeline'
 import { Route as OperationsRouteImport } from './routes/operations'
 import { Route as IntelRouteImport } from './routes/intel'
@@ -20,9 +20,9 @@ import { Route as ContactsIndexRouteImport } from './routes/contacts.index'
 import { Route as ContactsNewRouteImport } from './routes/contacts.new'
 import { Route as ContactsIdRouteImport } from './routes/contacts.$id'
 
-const TasksRoute = TasksRouteImport.update({
-  id: '/tasks',
-  path: '/tasks',
+const TopicsRoute = TopicsRouteImport.update({
+  id: '/topics',
+  path: '/topics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PipelineRoute = PipelineRouteImport.update({
@@ -78,7 +78,7 @@ export interface FileRoutesByFullPath {
   '/intel': typeof IntelRoute
   '/operations': typeof OperationsRoute
   '/pipeline': typeof PipelineRoute
-  '/tasks': typeof TasksRoute
+  '/topics': typeof TopicsRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
   '/contacts/': typeof ContactsIndexRoute
@@ -90,7 +90,7 @@ export interface FileRoutesByTo {
   '/intel': typeof IntelRoute
   '/operations': typeof OperationsRoute
   '/pipeline': typeof PipelineRoute
-  '/tasks': typeof TasksRoute
+  '/topics': typeof TopicsRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
   '/contacts': typeof ContactsIndexRoute
@@ -103,7 +103,7 @@ export interface FileRoutesById {
   '/intel': typeof IntelRoute
   '/operations': typeof OperationsRoute
   '/pipeline': typeof PipelineRoute
-  '/tasks': typeof TasksRoute
+  '/topics': typeof TopicsRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
   '/contacts/': typeof ContactsIndexRoute
@@ -117,7 +117,7 @@ export interface FileRouteTypes {
     | '/intel'
     | '/operations'
     | '/pipeline'
-    | '/tasks'
+    | '/topics'
     | '/contacts/$id'
     | '/contacts/new'
     | '/contacts/'
@@ -129,7 +129,7 @@ export interface FileRouteTypes {
     | '/intel'
     | '/operations'
     | '/pipeline'
-    | '/tasks'
+    | '/topics'
     | '/contacts/$id'
     | '/contacts/new'
     | '/contacts'
@@ -141,7 +141,7 @@ export interface FileRouteTypes {
     | '/intel'
     | '/operations'
     | '/pipeline'
-    | '/tasks'
+    | '/topics'
     | '/contacts/$id'
     | '/contacts/new'
     | '/contacts/'
@@ -154,7 +154,7 @@ export interface RootRouteChildren {
   IntelRoute: typeof IntelRoute
   OperationsRoute: typeof OperationsRoute
   PipelineRoute: typeof PipelineRoute
-  TasksRoute: typeof TasksRoute
+  TopicsRoute: typeof TopicsRoute
   ContactsIdRoute: typeof ContactsIdRoute
   ContactsNewRoute: typeof ContactsNewRoute
   ContactsIndexRoute: typeof ContactsIndexRoute
@@ -162,11 +162,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/tasks': {
-      id: '/tasks'
-      path: '/tasks'
-      fullPath: '/tasks'
-      preLoaderRoute: typeof TasksRouteImport
+    '/topics': {
+      id: '/topics'
+      path: '/topics'
+      fullPath: '/topics'
+      preLoaderRoute: typeof TopicsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pipeline': {
@@ -242,7 +242,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntelRoute: IntelRoute,
   OperationsRoute: OperationsRoute,
   PipelineRoute: PipelineRoute,
-  TasksRoute: TasksRoute,
+  TopicsRoute: TopicsRoute,
   ContactsIdRoute: ContactsIdRoute,
   ContactsNewRoute: ContactsNewRoute,
   ContactsIndexRoute: ContactsIndexRoute,

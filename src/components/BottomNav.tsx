@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { Home, Users, TrendingUp, CheckSquare, Wrench, Inbox, Radio } from "lucide-react";
+import { Home, Users, TrendingUp, MessagesSquare, Wrench, Inbox, Radio } from "lucide-react";
 
 const items = [
   { to: "/", label: "Home", icon: Home },
   { to: "/contacts", label: "Contacts", icon: Users },
   { to: "/pipeline", label: "Pipeline", icon: TrendingUp },
-  { to: "/tasks", label: "Tasks", icon: CheckSquare },
+  { to: "/topics", label: "Topics", icon: MessagesSquare },
   { to: "/operations", label: "Ops", icon: Wrench },
   { to: "/inbox", label: "Inbox", icon: Inbox },
   { to: "/intel", label: "Intel", icon: Radio },

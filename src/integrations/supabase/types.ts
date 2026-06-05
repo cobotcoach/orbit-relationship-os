@@ -328,6 +328,59 @@ export type Database = {
           },
         ]
       }
+      smart_topics: {
+        Row: {
+          contact_id: string | null
+          created_at: string
+          id: string
+          last_activity: string
+          last_update: string | null
+          next_action: string | null
+          notes: string | null
+          opened_at: string
+          source: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          last_activity?: string
+          last_update?: string | null
+          next_action?: string | null
+          notes?: string | null
+          opened_at?: string
+          source?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          last_activity?: string
+          last_update?: string | null
+          next_action?: string | null
+          notes?: string | null
+          opened_at?: string
+          source?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "smart_topics_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_tickets: {
         Row: {
           assigned_to: string | null
