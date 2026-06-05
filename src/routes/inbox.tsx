@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/db";
 import { Shell } from "@/components/Shell";
 import { Section, Pill, Markdown } from "@/components/ui-bits";
-import { Sparkles, Loader2, Plus, Check } from "lucide-react";
+import { Sparkles, Loader2, Plus, Check, Paperclip } from "lucide-react";
 import { processInbox } from "@/lib/ai.functions";
 
 export const Route = createFileRoute("/inbox")({
@@ -74,6 +74,29 @@ function InboxPage() {
         placeholder="Paste anything — an email thread, a Plaud transcript, an internal Slack message…"
         className="w-full bg-card border border-border rounded-xl p-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary"
       />
+      <div className="mt-2 flex items-center gap-2">
+        <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border text-xs cursor-pointer hover:border-primary">
+          <Paperclip className="h-3.5 w-3.5" />
+          Attach files
+          <input
+            type="file"
+            multiple
+            accept=".txt,.eml,.md,.csv,.json,.log,text/*"
+            className="hidden"
+            onChange={async (e) => {
+              const files = Array.from(e.target.files ?? []);
+              const parts: string[] = [];
+              for (const f of files) {
+                try { parts.push(`\n\n--- ${f.name} ---\n${await f.text()}`); } catch { /* ignore */ }
+              }
+              setText(t => t + parts.join(""));
+              e.target.value = "";
+            }}
+          />
+        </label>
+        {text && <button onClick={() => setText("")} className="text-xs text-muted-foreground hover:text-foreground">Clear</button>}
+        <span className="ml-auto text-[11px] text-muted-foreground">{text.length.toLocaleString()} chars</span>
+      </div>
       <button
         onClick={() => procM.mutate()}
         disabled={!text || procM.isPending}
