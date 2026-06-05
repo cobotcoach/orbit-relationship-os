@@ -15,14 +15,26 @@ async function callAI(opts: {
   const userContent = opts.json
     ? `${opts.user}\n\nRespond with ONLY a valid JSON object, no prose, no code fences.`
     : opts.user;
-  const gateway = createLovableAiGatewayProvider(key);
-  const { text } = await generateText({
-    model: gateway(MODEL),
-    system: opts.system,
-    prompt: userContent,
-    maxOutputTokens: 4096,
-  });
-  return text;
+  try {
+    const gateway = createLovableAiGatewayProvider(key);
+    const { text } = await generateText({
+      model: gateway(MODEL),
+      system: opts.system,
+      prompt: userContent,
+      maxOutputTokens: 4096,
+    });
+    return text;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "AI request failed.";
+    if (message.includes("429") || message.toLowerCase().includes("rate limit")) {
+      throw new Error("AI rate limit — try again shortly.");
+    }
+    if (message.includes("402") || message.toLowerCase().includes("credits")) {
+      throw new Error("AI credits exhausted.");
+    }
+    console.error(error);
+    throw new Error("AI request failed — please try again.");
+  }
 }
 
 function safeJSON<T>(s: string, fallback: T): T {
