@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { db } from "@/lib/db";
 import { Shell } from "@/components/Shell";
 import { Section, Pill, Markdown } from "@/components/ui-bits";
-import { Sparkles, Loader2, Plus, Check } from "lucide-react";
+import { Sparkles, Loader2, Plus, Check, Paperclip } from "lucide-react";
 import { processInbox } from "@/lib/ai.functions";
 
 export const Route = createFileRoute("/inbox")({
