@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
 
-const MODEL = "claude-sonnet-4-20250514";
+const MODEL = "claude-3-5-sonnet-latest";
 const ENDPOINT = "https://api.anthropic.com/v1/messages";
 
 async function callAI(opts: {
