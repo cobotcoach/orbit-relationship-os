@@ -273,9 +273,6 @@ function TasksPage() {
       </button>
 
       {showNew && <NewTaskSheet onClose={() => setShowNew(false)} contacts={contacts} />}
-
-      {/* hidden Link to satisfy route preloading typecheck */}
-      <Link to="/tasks" className="hidden" />
     </Shell>
   );
 }
