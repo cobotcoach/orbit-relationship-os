@@ -151,5 +151,83 @@ Return JSON: { "ordered_ids": string[] (every task id, most important first), "s
     return safeJSON(raw, { ordered_ids: [] as string[], summary: "" });
   });
 
+// 6. Extract contacts + intel from arbitrary text dump (chunked)
+type ExtractResult = {
+  contacts: {
+    name: string;
+    email: string | null;
+    company: string | null;
+    role: string | null;
+    suggested_type: string;
+    suggested_folder: string;
+    tags: string[];
+    rationale: string;
+  }[];
+  actions: { title: string; urgency: string; contact_hint: string | null }[];
+  intel: { summary: string; topics: string[]; sentiment: string; urgency: string; contact_hint: string | null }[];
+};
+
+function chunkText(text: string, maxChars = 12000): string[] {
+  if (text.length <= maxChars) return [text];
+  const chunks: string[] = [];
+  let i = 0;
+  while (i < text.length) {
+    let end = Math.min(i + maxChars, text.length);
+    if (end < text.length) {
+      const nl = text.lastIndexOf("\n", end);
+      if (nl > i + maxChars * 0.5) end = nl;
+    }
+    chunks.push(text.slice(i, end));
+    i = end;
+  }
+  return chunks;
+}
+
+export const extractImportData = createServerFn({ method: "POST" })
+  .inputValidator((d: { text: string; mode: "email" | "generic" }) => d)
+  .handler(async ({ data }) => {
+    const sys = `You are ORBIT, an AI relationship OS for Dobot Robotics UK (cobots, robotics). Analyse the supplied ${data.mode === "email" ? "email dump (headers, threads, CSV/PST export text)" : "arbitrary data dump (meeting notes, LinkedIn export, CRM export, spreadsheet text, etc.)"} and extract EVERY unique person mentioned plus any actions and intelligence.
+Return JSON:
+{
+  "contacts": [{
+    "name": string,
+    "email": string|null,
+    "company": string|null,
+    "role": string|null,
+    "suggested_type": one of [channel_partner, end_user, prospect, ecosystem_partner, distributor, internal],
+    "suggested_folder": valid folder for that type,
+    "tags": string[] (max 5),
+    "rationale": 1 short sentence
+  }],
+  "actions": [{ "title": string, "urgency": "low"|"medium"|"high"|"critical", "contact_hint": string|null (name or email of related contact) }],
+  "intel": [{ "summary": string, "topics": string[], "sentiment": "positive"|"neutral"|"negative", "urgency": "low"|"medium"|"high"|"critical", "contact_hint": string|null }]
+}
+Folders by type:
+- channel_partner: active, onboarding_1, onboarding_2, onboarding_3, onboarding_4, lapsed
+- end_user: enterprise, sme
+- prospect: hot, warm, cold
+- ecosystem_partner|distributor|internal: default
+Deduplicate within your response. Skip generic role accounts (noreply@, info@). Be exhaustive — every named person counts.`;
+    const chunks = chunkText(data.text);
+    const merged: ExtractResult = { contacts: [], actions: [], intel: [] };
+    const seen = new Set<string>();
+    for (let i = 0; i < chunks.length; i++) {
+      const user = chunks.length > 1
+        ? `CHUNK ${i + 1} of ${chunks.length}:\n${chunks[i]}`
+        : chunks[i];
+      const raw = await callAI({ system: sys, user, json: true });
+      const parsed = safeJSON<ExtractResult>(raw, { contacts: [], actions: [], intel: [] });
+      for (const c of parsed.contacts ?? []) {
+        const key = (c.email?.toLowerCase() ?? "") + "|" + (c.name ?? "").toLowerCase().trim();
+        if (!c.name || seen.has(key)) continue;
+        seen.add(key);
+        merged.contacts.push(c);
+      }
+      for (const a of parsed.actions ?? []) merged.actions.push(a);
+      for (const it of parsed.intel ?? []) merged.intel.push(it);
+    }
+    return merged;
+  });
+
 
 
