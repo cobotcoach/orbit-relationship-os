@@ -42,7 +42,7 @@ export interface Action {
   title: string;
   description: string | null;
   urgency: "low" | "medium" | "high" | "critical";
-  status: "open" | "done";
+  status: "todo" | "in_progress" | "done" | "deferred" | "open";
   due_date: string | null;
   created_at: string;
   completed_at: string | null;
