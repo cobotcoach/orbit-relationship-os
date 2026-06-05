@@ -35,9 +35,14 @@ function Home() {
       title="ORBIT"
       subtitle="Richard · Dobot Robotics UK"
       action={
-        <Link to="/contacts/new" className="h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center tap active:scale-95">
-          <Plus className="h-5 w-5" />
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link to="/import" className="h-9 px-3 rounded-full bg-secondary text-secondary-foreground inline-flex items-center gap-1.5 text-xs font-medium tap active:scale-95">
+            <Upload className="h-3.5 w-3.5" /> Import
+          </Link>
+          <Link to="/contacts/new" className="h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center tap active:scale-95">
+            <Plus className="h-5 w-5" />
+          </Link>
+        </div>
       }
     >
       <Section title="Today's priority contacts">
