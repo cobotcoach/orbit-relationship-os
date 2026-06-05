@@ -106,6 +106,8 @@ function InboxPage() {
         Process with AI
       </button>
 
+      {procM.isError && <p className="mt-2 text-xs text-[color:var(--urgent)]">{(procM.error as Error).message}</p>}
+
       {result && (
         <div className="mt-5 space-y-4">
           <div className="rounded-xl bg-card border border-primary/40 p-3">
