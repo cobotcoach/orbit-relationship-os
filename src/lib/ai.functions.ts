@@ -1,41 +1,28 @@
 import { createServerFn } from "@tanstack/react-start";
+import { generateText } from "ai";
+import { AI_MODEL, createLovableAiGatewayProvider } from "./ai-gateway.server";
 
 
-const MODEL = "claude-3-5-sonnet-latest";
-const ENDPOINT = "https://api.anthropic.com/v1/messages";
+const MODEL = AI_MODEL;
 
 async function callAI(opts: {
   system: string;
   user: string;
   json?: boolean;
 }): Promise<string> {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) throw new Error("Missing ANTHROPIC_API_KEY");
+  const key = process.env.LOVABLE_API_KEY;
+  if (!key) throw new Error("AI is not configured.");
   const userContent = opts.json
     ? `${opts.user}\n\nRespond with ONLY a valid JSON object, no prose, no code fences.`
     : opts.user;
-  const res = await fetch(ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": key,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      max_tokens: 4096,
-      system: opts.system,
-      messages: [{ role: "user", content: userContent }],
-    }),
+  const gateway = createLovableAiGatewayProvider(key);
+  const { text } = await generateText({
+    model: gateway(MODEL),
+    system: opts.system,
+    prompt: userContent,
+    maxOutputTokens: 4096,
   });
-  if (!res.ok) {
-    const text = await res.text();
-    if (res.status === 429) throw new Error("AI rate limit — try again shortly.");
-    if (res.status === 402) throw new Error("AI credits exhausted.");
-    throw new Error(`AI error ${res.status}: ${text.slice(0, 200)}`);
-  }
-  const data = await res.json();
-  return data?.content?.[0]?.text ?? "";
+  return text;
 }
 
 function safeJSON<T>(s: string, fallback: T): T {
