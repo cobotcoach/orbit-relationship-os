@@ -148,14 +148,8 @@ function UploadPage() {
   const clearDone = () => setQueue(q => q.filter(x => x.status !== "done"));
 
   return (
-    <Shell>
-      <div className="max-w-3xl mx-auto p-4 space-y-4">
-        <header className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight inline-flex items-center gap-2">
-            <Upload className="h-6 w-6 text-primary" /> Bulk Upload
-          </h1>
-          <p className="text-sm text-muted-foreground">Drop Plaud PDF transcripts here. Each will be extracted, classified, and routed.</p>
-        </header>
+    <Shell title="Bulk Upload" subtitle="Drop Plaud PDF transcripts here. Each will be extracted, classified, and routed.">
+      <div className="max-w-3xl mx-auto space-y-4">
 
         <div
           onDragOver={e => { e.preventDefault(); setDragOver(true); }}

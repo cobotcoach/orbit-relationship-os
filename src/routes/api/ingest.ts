@@ -104,7 +104,7 @@ export const Route = createFileRoute("/api/ingest")({
 
         const finishLog = async (patch: Record<string, unknown>) => {
           if (!logId) return;
-          await supabaseAdmin.from("captures_log").update(patch).eq("id", logId);
+          await supabaseAdmin.from("captures_log").update(patch as never).eq("id", logId);
         };
 
         try {
