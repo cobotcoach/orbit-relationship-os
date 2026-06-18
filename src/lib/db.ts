@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Contact, Activity, Action, Quote, AppEvent, LoanEquipment, SupportTicket, IntelligenceItem, SmartTopic, Idea, FocusItem } from "./types";
+import type { Contact, Activity, Action, Quote, AppEvent, LoanEquipment, SupportTicket, IntelligenceItem, SmartTopic, Idea, FocusItem, CaptureLogEntry } from "./types";
 
 export const db = {
   contacts: {
@@ -170,6 +170,20 @@ export const db = {
     },
     clearForDate: async (date: string): Promise<void> => {
       const { error } = await supabase.from("focus_items").delete().eq("date", date);
+      if (error) throw error;
+    },
+  },
+  log: {
+    list: async (): Promise<CaptureLogEntry[]> => {
+      const { data, error } = await supabase.from("captures_log").select("*").order("created_at", { ascending: false }).limit(200);
+      if (error) throw error; return (data ?? []) as CaptureLogEntry[];
+    },
+    insert: async (entry: Partial<CaptureLogEntry>): Promise<CaptureLogEntry> => {
+      const { data, error } = await supabase.from("captures_log").insert(entry as never).select().single();
+      if (error) throw error; return data as CaptureLogEntry;
+    },
+    update: async (id: string, patch: Partial<CaptureLogEntry>): Promise<void> => {
+      const { error } = await supabase.from("captures_log").update(patch as never).eq("id", id);
       if (error) throw error;
     },
   },
