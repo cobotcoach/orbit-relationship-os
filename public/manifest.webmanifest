@@ -1,0 +1,22 @@
+{
+  "name": "ORBIT — AI Relationship OS",
+  "short_name": "ORBIT",
+  "description": "AI relationship operating system for managing connections, intel, and business.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
