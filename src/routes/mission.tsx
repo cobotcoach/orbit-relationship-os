@@ -705,11 +705,14 @@ function groupHealth(items: BusinessSection[]): { tone: "green" | "amber" | "red
 }
 
 function SectionGroupsPanel({
-  sections, decisions, synthRunningSlug, onChange,
+  sections, decisions, synthRunningSlug, syncingSlug, syncSection, pullSection, onChange,
 }: {
   sections: BusinessSection[];
   decisions: Decision[];
   synthRunningSlug: string | null;
+  syncingSlug: string | null;
+  syncSection: (slug: string) => Promise<void>;
+  pullSection: (slug: string) => Promise<void>;
   onChange: () => void;
 }) {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
