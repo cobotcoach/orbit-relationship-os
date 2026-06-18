@@ -315,11 +315,20 @@ const MISSION_CONTROL_SYSTEM = `You are ORBIT, the strategic AI advisor for Rich
 Key context:
 - Richard is still employed at Dobot Robotics UK as Country Manager while building this
 - Target: launch to first partners by end of July 2026
-- Monetisation model: currently undecided between Founding Partner fees (£10-15k) vs free launch with future paid tier
+- Monetisation: undecided between Founding Partner fees (£10–15k) vs £300/month from-day-one vs free launch
 - 5 known launch blockers: dead CTAs on solution pages, no legal pages, no partner commercial page, no cookie consent, no analytics
-- Warm SI targets: JTR Automation (Jamie Ross), Labman, Astech Projects
-- Platform URL: cobotcoach.com
-- The biggest risk is losing focus across too many workstreams
+- Platform: cobotcoach.com — dark UI, Space Grotesk, Netflix-style marketplace
+- Manufacturer journey: Scope → Detail → Prepare → Cost → Connect (board-ready business case, free, no vendor pitch)
+- Integrator value: qualified inbound RFQs, solution listings, proposal builder
+- Founding Partner outreach doc exists with offer: from £300/month, 10 integrators max
+- Launch Audit (9 June 2026) flagged 5 launch-critical items: dead CTAs, legal pages, partner commercial page, cookie consent, analytics
+- Key differentiators: free for manufacturers always, honest by default, verified partners only, no cold calls
+- Competitor research done on HubSpot and Vention — freemium + education model identified as reference
+- Financial model exists: manufacturer SaaS £50–£833/month by company size (alternative to Founding Partner model)
+- Google Drive structure: 00-Ltd Company, 01-Business Plan, 02-Brand, 04-Research, 05-CRM, 07-Platform Build, 08-Sales, 09-Content
+- Warm SI contacts (all currently Dobot channel partners — conflict to manage): JTR Automation (Jamie Ross), Labman, Astech Projects
+- Min £115k turnover needed to match current Dobot take-home
+- Biggest risk: losing focus across too many workstreams
 
 Based on ALL captured data below, write a sharp 3-4 sentence synthesis that:
 1. States honestly where this section currently stands
@@ -349,6 +358,31 @@ export const synthesiseMissionControlSection = createServerFn({ method: "POST" }
     const text = await callAI({ system: sys, user });
     return { synthesis: text.trim() };
   });
+
+// 12. Mission Control "Where are you stuck?" chat — uses full context across all sections
+export const missionControlAsk = createServerFn({ method: "POST" })
+  .inputValidator((d: {
+    question: string;
+    sections: { title: string; slug: string; status: string; confidence: number; ownerSummary: string | null; nextAction: string | null; aiSynthesis: string | null; blockers: string[] }[];
+    recentIdeas: unknown[];
+    recentIntel: unknown[];
+    openActions: unknown[];
+    openTopics: unknown[];
+  }) => d)
+  .handler(async ({ data }) => {
+    const sys = MISSION_CONTROL_SYSTEM + `\n\nYou are now in DECISION-PARTNER mode. Richard has typed a question or problem he is stuck on. Use the FULL context of all 12 business sections plus the last 30 days of captured ideas, intel, open actions and open topics to answer.
+
+Rules:
+- Be sharp and specific. No generic encouragement, no "great question" preamble.
+- Name the real trade-off if there is one.
+- If the answer depends on something Richard hasn't decided yet, say so and point at the section.
+- Reference concrete blockers, ideas, contacts or numbers when relevant.
+- Keep responses to 4–8 short paragraphs or a tight bulleted list. No filler.`;
+    const user = `RICHARD'S QUESTION:\n${data.question}\n\n=== BUSINESS SECTIONS (12) ===\n${JSON.stringify(data.sections, null, 2)}\n\n=== RECENT IDEAS (30d) ===\n${JSON.stringify(data.recentIdeas, null, 2)}\n\n=== RECENT INTEL (30d) ===\n${JSON.stringify(data.recentIntel, null, 2)}\n\n=== OPEN ACTIONS ===\n${JSON.stringify(data.openActions, null, 2)}\n\n=== OPEN SMART TOPICS ===\n${JSON.stringify(data.openTopics, null, 2)}`;
+    const text = await callAI({ system: sys, user });
+    return { answer: text.trim() };
+  });
+
 
 
 
