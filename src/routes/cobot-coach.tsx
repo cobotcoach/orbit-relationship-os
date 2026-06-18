@@ -36,7 +36,12 @@ function daysUntil(d: Date) {
 
 function hasTag(idea: Idea, ...tags: string[]) {
   const t = idea.tags?.map(x => x.toLowerCase()) ?? [];
-  return tags.some(tag => t.includes(tag.toLowerCase()));
+  const title = (idea.title ?? "").toLowerCase();
+  const summary = (idea.summary ?? "").toLowerCase();
+  return tags.some(tag => {
+    const lc = tag.toLowerCase();
+    return t.includes(lc) || title.includes(lc) || summary.includes(lc);
+  });
 }
 
 function CardShell({ emoji, title, href, children }: { emoji: string; title: string; href?: string; children: React.ReactNode }) {
