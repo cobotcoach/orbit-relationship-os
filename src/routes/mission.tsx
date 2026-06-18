@@ -62,9 +62,53 @@ function MissionPage() {
   const topics = useQuery({ queryKey: ["topics"], queryFn: db.topics.list });
 
   const synthesise = useServerFn(synthesiseMissionControlSection);
+  const syncFn = useServerFn(syncSectionToDrive);
+  const pullFn = useServerFn(pullFromDrive);
   const [synthRunning, setSynthRunning] = useState<string | null>(null);
   const [synthProgress, setSynthProgress] = useState<{ current: number; total: number } | null>(null);
+  const [syncingSlug, setSyncingSlug] = useState<string | null>(null);
+  const [syncProgress, setSyncProgress] = useState<{ current: number; total: number; label: string } | null>(null);
   const autoRanRef = useRef(false);
+
+  const syncSection = useCallback(async (slug: string): Promise<void> => {
+    setSyncingSlug(slug);
+    try {
+      await syncFn({ data: { slug } });
+      qc.invalidateQueries({ queryKey: ["mc:sections"] });
+    } catch (e) {
+      console.error("Drive sync failed for", slug, e);
+    } finally {
+      setSyncingSlug(prev => (prev === slug ? null : prev));
+    }
+  }, [syncFn, qc]);
+
+  const pullSection = useCallback(async (slug: string): Promise<void> => {
+    setSyncingSlug(slug);
+    try {
+      await pullFn({ data: { slug } });
+      qc.invalidateQueries({ queryKey: ["mc:sections"] });
+    } catch (e) {
+      console.error("Drive pull failed for", slug, e);
+    } finally {
+      setSyncingSlug(prev => (prev === slug ? null : prev));
+    }
+  }, [pullFn, qc]);
+
+  async function syncAll(list: BusinessSection[]) {
+    for (let i = 0; i < list.length; i++) {
+      const s = list[i];
+      setSyncProgress({ current: i + 1, total: list.length, label: s.title });
+      setSyncingSlug(s.slug);
+      try {
+        await syncFn({ data: { slug: s.slug } });
+      } catch (e) {
+        console.error("Sync failed", s.slug, e);
+      }
+    }
+    setSyncingSlug(null);
+    setSyncProgress(null);
+    qc.invalidateQueries({ queryKey: ["mc:sections"] });
+  }
 
   const days = daysTo(LAUNCH_DATE);
   const countdownColor = days < 30 ? "text-red-500" : days < 60 ? "text-amber-500" : "text-muted-foreground";
