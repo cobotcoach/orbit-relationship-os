@@ -1,11 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { RefreshCw, Loader2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { Shell } from "@/components/Shell";
 import { Pill } from "@/components/ui-bits";
 import { useMode } from "@/lib/mode-context";
+import { reclassifyIdea } from "@/lib/ingest.functions";
 import type { Idea } from "@/lib/types";
+
+const BUCKET_TAGS = ["monetisation", "sales", "content", "build", "launch", "product"] as const;
+const AUTO_RETAG_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
+function ideaHasBucketTag(idea: Idea): boolean {
+  const t = (idea.tags ?? []).map(x => x.toLowerCase());
+  return BUCKET_TAGS.some(b => t.includes(b));
+}
 
 export const Route = createFileRoute("/cobot-coach")({
   head: () => ({ meta: [{ title: "ORBIT — Cobot Coach" }] }),
