@@ -758,6 +758,9 @@ function SectionGroupsPanel({
                       section={sec}
                       decisions={decisions.filter(d => d.section_slug === sec.slug)}
                       synthRunning={synthRunningSlug === sec.slug}
+                      syncing={syncingSlug === sec.slug}
+                      syncSection={syncSection}
+                      pullSection={pullSection}
                       onChange={onChange}
                     />
                   ))}
