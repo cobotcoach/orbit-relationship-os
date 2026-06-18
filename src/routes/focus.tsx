@@ -93,10 +93,12 @@ function FocusPage() {
 
   const sorted = [...items].sort((a, b) => a.priority - b.priority);
 
+  const dateStr = new Date().toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
   return (
     <Shell
-      title={activeMode ? `Today · ${modeLabel}` : "Today's Focus"}
-      subtitle={new Date().toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}
+      title="Today's Focus"
+      subtitle={activeMode ? `${dateStr} · ${modeLabel}` : dateStr}
+
 
       action={
         <button onClick={() => regenerate.mutate()} disabled={regenerate.isPending}
