@@ -183,3 +183,38 @@ export const ingestFromBrowser = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }) => ingestTranscript(data));
+
+export const reclassifyIdea = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => {
+    const d = (data ?? {}) as Record<string, unknown>;
+    return { id: String(d.id ?? "") };
+  })
+  .handler(async ({ data }) => {
+    if (!data.id) return { ok: false, error: "Missing id" };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: idea, error: fetchErr } = await supabaseAdmin
+      .from("ideas")
+      .select("id, raw_text")
+      .eq("id", data.id)
+      .single();
+    if (fetchErr || !idea) return { ok: false, error: fetchErr?.message ?? "Idea not found" };
+    const transcript = (idea as { raw_text: string | null }).raw_text?.trim();
+    if (!transcript) return { ok: false, error: "Idea has no raw_text to re-classify" };
+    try {
+      const c = await classify(transcript);
+      const { error: updErr } = await supabaseAdmin
+        .from("ideas")
+        .update({
+          title: c.title,
+          summary: c.summary,
+          mode: c.mode,
+          energy_score: c.energy_score,
+          tags: c.tags,
+        } as never)
+        .eq("id", data.id);
+      if (updErr) throw new Error(updErr.message);
+      return { ok: true, mode: c.mode, tags: c.tags, title: c.title };
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    }
+  });
