@@ -36,9 +36,8 @@ function Home() {
   const openPipeline = (quotes.data ?? []).filter(q => !["won", "lost"].includes(q.stage));
   const openValue = openPipeline.reduce((s, q) => s + Number(q.value || 0), 0);
 
-  const openActionsCount = ((/* eslint-disable */ undefined) as never) ?? 0; // placeholder, see below
-  void openActionsCount;
   const allIdeas = ideas.data ?? [];
+
   const wildCount = allIdeas.filter(i => i.mode === "wild").length;
   const cobotIdeas = allIdeas.filter(i => i.mode === "cobot_coach").length;
   const topFocus = (focus.data ?? [])[0];
