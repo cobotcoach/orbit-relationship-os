@@ -623,9 +623,9 @@ function StuckChatPanel({
 }: {
   sections: BusinessSection[];
   ideas: Idea[];
-  intel: { id: string; summary: string; topics: string[] | null; created_at: string }[];
-  actions: { id: string; title: string; urgency: string | null; status: string }[];
-  topics: { id: string; title: string; status: string; next_action: string | null }[];
+  intel: IntelligenceItem[];
+  actions: Action[];
+  topics: SmartTopic[];
 }) {
   const ask = useServerFn(missionControlAsk);
   const qc = useQueryClient();
