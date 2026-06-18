@@ -109,6 +109,7 @@ export type Database = {
           id: string
           industry: string | null
           last_contact_date: string | null
+          mode_tags: string[]
           name: string
           notes: string | null
           phone: string | null
@@ -127,6 +128,7 @@ export type Database = {
           id?: string
           industry?: string | null
           last_contact_date?: string | null
+          mode_tags?: string[]
           name: string
           notes?: string | null
           phone?: string | null
@@ -145,6 +147,7 @@ export type Database = {
           id?: string
           industry?: string | null
           last_contact_date?: string | null
+          mode_tags?: string[]
           name?: string
           notes?: string | null
           phone?: string | null
@@ -378,6 +381,7 @@ export type Database = {
           contact_id: string | null
           created_at: string
           id: string
+          mode: string
           notes: string | null
           products: string | null
           quote_date: string
@@ -392,6 +396,7 @@ export type Database = {
           contact_id?: string | null
           created_at?: string
           id?: string
+          mode?: string
           notes?: string | null
           products?: string | null
           quote_date?: string
@@ -406,6 +411,7 @@ export type Database = {
           contact_id?: string | null
           created_at?: string
           id?: string
+          mode?: string
           notes?: string | null
           products?: string | null
           quote_date?: string
@@ -431,6 +437,7 @@ export type Database = {
           id: string
           last_activity: string
           last_update: string | null
+          mode: string
           next_action: string | null
           notes: string | null
           opened_at: string
@@ -445,6 +452,7 @@ export type Database = {
           id?: string
           last_activity?: string
           last_update?: string | null
+          mode?: string
           next_action?: string | null
           notes?: string | null
           opened_at?: string
@@ -459,6 +467,7 @@ export type Database = {
           id?: string
           last_activity?: string
           last_update?: string | null
+          mode?: string
           next_action?: string | null
           notes?: string | null
           opened_at?: string
