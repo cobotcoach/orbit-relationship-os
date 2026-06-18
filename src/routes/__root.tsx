@@ -8,8 +8,6 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import { ModeProvider } from "../lib/mode-context";
-
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -80,11 +78,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "ORBIT — AI Relationship OS" },
-      { name: "description", content: "ORBIT — AI relationship operating system for Dobot Robotics UK." },
-      { property: "og:title", content: "ORBIT" },
-      { property: "og:description", content: "AI relationship operating system." },
+      { name: "description", content: "ORBIT — AI relationship operating system" },
+      { property: "og:title", content: "ORBIT — AI Relationship OS" },
+      { property: "og:description", content: "ORBIT — AI relationship operating system" },
       { property: "og:type", content: "website" },
       { name: "theme-color", content: "#0a0d14" },
+      { name: "twitter:title", content: "ORBIT — AI Relationship OS" },
+      { name: "twitter:description", content: "ORBIT — AI relationship operating system" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/52603b59-47f1-4c6a-bc77-ba72282fdf23/id-preview-731a47d5--0b92ac4a-1434-487c-9777-8a5a4cf58306.lovable.app-1781811034387.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/52603b59-47f1-4c6a-bc77-ba72282fdf23/id-preview-731a47d5--0b92ac4a-1434-487c-9777-8a5a4cf58306.lovable.app-1781811034387.png" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       {
@@ -118,11 +121,8 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ModeProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-      </ModeProvider>
+      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+      <Outlet />
     </QueryClientProvider>
   );
 }
-
