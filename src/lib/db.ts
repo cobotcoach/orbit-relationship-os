@@ -241,6 +241,16 @@ export const db = {
       if (error) throw error; return data as Decision;
     },
   },
+  missionChats: {
+    list: async (limit = 50): Promise<{ id: string; question: string; answer: string; created_at: string }[]> => {
+      const { data, error } = await supabase.from("mission_chats" as never).select("*").order("created_at", { ascending: false }).limit(limit);
+      if (error) throw error; return (data ?? []) as { id: string; question: string; answer: string; created_at: string }[];
+    },
+    insert: async (q: string, a: string): Promise<void> => {
+      const { error } = await supabase.from("mission_chats" as never).insert({ question: q, answer: a } as never);
+      if (error) throw error;
+    },
+  },
 };
 
 export { mondayISO };
