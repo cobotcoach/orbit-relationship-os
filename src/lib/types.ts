@@ -60,10 +60,12 @@ export interface Quote {
   stage: "prospect" | "quoted" | "negotiating" | "won" | "lost";
   channel: "partner" | "direct" | "distributor";
   quote_date: string;
+  mode: string;
   notes: string | null;
   created_at: string;
   updated_at: string;
 }
+
 
 export interface AppEvent {
   id: string;
@@ -165,10 +167,12 @@ export interface SmartTopic {
   last_activity: string;
   next_action: string | null;
   source: "manual" | "inbox" | "plaud" | string;
+  mode: string;
   notes: string | null;
   created_at: string;
   updated_at: string;
 }
+
 
 export const CONTACT_TYPES: { value: ContactType; label: string }[] = [
   { value: "channel_partner", label: "Channel Partners" },
