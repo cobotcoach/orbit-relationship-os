@@ -83,7 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "ORBIT — AI Relationship OS" },
       { property: "og:description", content: "ORBIT — AI relationship operating system" },
       { property: "og:type", content: "website" },
-      { name: "theme-color", content: "#0a0d14" },
+      { name: "theme-color", content: "#0d1117" },
       { name: "twitter:title", content: "ORBIT — AI Relationship OS" },
       { name: "twitter:description", content: "ORBIT — AI relationship operating system" },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/52603b59-47f1-4c6a-bc77-ba72282fdf23/id-preview-731a47d5--0b92ac4a-1434-487c-9777-8a5a4cf58306.lovable.app-1781811034387.png" },
@@ -93,6 +93,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", sizes: "192x192", href: "/icon-192.png" },
+      { rel: "icon", type: "image/png", sizes: "512x512", href: "/icon-512.png" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" },
       { rel: "stylesheet", href: appCss },
     ],
