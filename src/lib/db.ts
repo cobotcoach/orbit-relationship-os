@@ -1,5 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Contact, Activity, Action, Quote, AppEvent, LoanEquipment, SupportTicket, IntelligenceItem, SmartTopic, Idea, FocusItem, CaptureLogEntry } from "./types";
+import type { Contact, Activity, Action, Quote, AppEvent, LoanEquipment, SupportTicket, IntelligenceItem, SmartTopic, Idea, FocusItem, CaptureLogEntry, BusinessSection, WeeklyCommitment, Decision } from "./types";
+
+function mondayISO(d = new Date()) {
+  const date = new Date(d);
+  const day = date.getUTCDay();
+  const diff = (day === 0 ? -6 : 1 - day);
+  date.setUTCDate(date.getUTCDate() + diff);
+  return date.toISOString().slice(0, 10);
+}
 
 export const db = {
   contacts: {
