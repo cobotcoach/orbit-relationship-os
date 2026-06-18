@@ -245,10 +245,10 @@ export type Database = {
       }
       ideas: {
         Row: {
-          category: string
           created_at: string
           energy_score: number
           id: string
+          mode: string
           raw_text: string
           source: string
           status: string
@@ -258,10 +258,10 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          category?: string
           created_at?: string
           energy_score?: number
           id?: string
+          mode?: string
           raw_text: string
           source?: string
           status?: string
@@ -271,10 +271,10 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          category?: string
           created_at?: string
           energy_score?: number
           id?: string
+          mode?: string
           raw_text?: string
           source?: string
           status?: string

@@ -1,0 +1,1 @@
+ALTER TABLE public.ideas RENAME COLUMN category TO mode;
