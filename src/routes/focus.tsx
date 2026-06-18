@@ -7,7 +7,9 @@ import { EmptyState } from "@/components/ui-bits";
 import { generateFocus } from "@/lib/ai.functions";
 import { Target, Sparkles, Loader2, Check, SkipForward } from "lucide-react";
 import type { FocusItem } from "@/lib/types";
+import { useMode } from "@/lib/mode-context";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/focus")({
   head: () => ({ meta: [{ title: "ORBIT — Focus" }] }),
