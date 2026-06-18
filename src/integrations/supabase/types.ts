@@ -99,6 +99,51 @@ export type Database = {
           },
         ]
       }
+      business_sections: {
+        Row: {
+          ai_synthesis: string | null
+          ai_synthesised_at: string | null
+          blockers: string[] | null
+          confidence_score: number | null
+          emoji: string
+          id: string
+          last_updated: string
+          next_action: string | null
+          owner_summary: string | null
+          slug: string
+          status: string
+          title: string
+        }
+        Insert: {
+          ai_synthesis?: string | null
+          ai_synthesised_at?: string | null
+          blockers?: string[] | null
+          confidence_score?: number | null
+          emoji: string
+          id?: string
+          last_updated?: string
+          next_action?: string | null
+          owner_summary?: string | null
+          slug: string
+          status?: string
+          title: string
+        }
+        Update: {
+          ai_synthesis?: string | null
+          ai_synthesised_at?: string | null
+          blockers?: string[] | null
+          confidence_score?: number | null
+          emoji?: string
+          id?: string
+          last_updated?: string
+          next_action?: string | null
+          owner_summary?: string | null
+          slug?: string
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       captures_log: {
         Row: {
           char_count: number | null
@@ -198,6 +243,39 @@ export type Database = {
           type?: string
           updated_at?: string
           urgent?: boolean
+        }
+        Relationships: []
+      }
+      decisions: {
+        Row: {
+          alternatives: string | null
+          decision: string
+          id: string
+          made_at: string
+          reasoning: string | null
+          review_at: string | null
+          section_slug: string
+          title: string
+        }
+        Insert: {
+          alternatives?: string | null
+          decision: string
+          id?: string
+          made_at?: string
+          reasoning?: string | null
+          review_at?: string | null
+          section_slug: string
+          title: string
+        }
+        Update: {
+          alternatives?: string | null
+          decision?: string
+          id?: string
+          made_at?: string
+          reasoning?: string | null
+          review_at?: string | null
+          section_slug?: string
+          title?: string
         }
         Relationships: []
       }
@@ -577,6 +655,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      weekly_commitments: {
+        Row: {
+          commitment: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          section_slug: string
+          status: string
+          week_starting: string
+        }
+        Insert: {
+          commitment: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          section_slug: string
+          status?: string
+          week_starting: string
+        }
+        Update: {
+          commitment?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          section_slug?: string
+          status?: string
+          week_starting?: string
+        }
+        Relationships: []
       }
     }
     Views: {
