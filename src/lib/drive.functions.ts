@@ -275,6 +275,7 @@ export const syncSectionToDrive = createServerFn({ method: "POST" })
 export const pullFromDrive = createServerFn({ method: "POST" })
   .inputValidator((d: { slug: string }) => d)
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: sec, error: secErr } = await supabaseAdmin
       .from("business_sections")
       .select("slug,drive_doc_id,owner_summary")
