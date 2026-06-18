@@ -7,7 +7,9 @@ import { EmptyState } from "@/components/ui-bits";
 import { generateFocus } from "@/lib/ai.functions";
 import { Target, Sparkles, Loader2, Check, SkipForward } from "lucide-react";
 import type { FocusItem } from "@/lib/types";
+import { useMode } from "@/lib/mode-context";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/focus")({
   head: () => ({ meta: [{ title: "ORBIT — Focus" }] }),
@@ -49,6 +51,7 @@ function FocusCard({ item, index, onUpdate }: { item: FocusItem; index: number; 
 
 function FocusPage() {
   const qc = useQueryClient();
+  const { activeMode, modeLabel } = useMode();
   const { data: items = [] } = useQuery({ queryKey: ["focus", "today"], queryFn: db.focus.today });
   const generateFn = useServerFn(generateFocus);
 
@@ -59,10 +62,12 @@ function FocusPage() {
       const recentIdeas = ideas.slice(0, 10);
       const res = await generateFn({
         data: {
-          ideas: recentIdeas.map(i => ({ id: i.id, title: i.title, summary: i.summary, category: i.category, energy_score: i.energy_score })),
+          ideas: recentIdeas.map(i => ({ id: i.id, title: i.title, summary: i.summary, mode: i.mode, energy_score: i.energy_score })),
           actions: openActions.map(a => ({ id: a.id, title: a.title, urgency: a.urgency, contact_id: a.contact_id, due_date: a.due_date })),
+          mode: activeMode,
         },
       });
+
       const today = todayISO();
       await db.focus.clearForDate(today);
       for (const it of res.items ?? []) {
@@ -90,8 +95,9 @@ function FocusPage() {
 
   return (
     <Shell
-      title="Today's Focus"
+      title={activeMode ? `Today · ${modeLabel}` : "Today's Focus"}
       subtitle={new Date().toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}
+
       action={
         <button onClick={() => regenerate.mutate()} disabled={regenerate.isPending}
           className="inline-flex items-center gap-1.5 bg-primary/15 text-primary border border-primary/30 rounded-lg px-2.5 py-1.5 text-xs font-semibold disabled:opacity-50">

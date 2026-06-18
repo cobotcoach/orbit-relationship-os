@@ -13,23 +13,30 @@ const items = [
   { to: "/intel", label: "Intel", icon: Radio },
 ] as const;
 
-export function BottomNav() {
+export function SideNav() {
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass border-t border-border tap">
-      <div className="mx-auto max-w-xl grid grid-cols-9 px-0.5 pb-[max(0.25rem,env(safe-area-inset-bottom))] pt-1">
+    <aside className="hidden md:flex fixed left-0 top-0 bottom-0 z-40 flex-col glass border-r border-border w-16 xl:w-56 py-4">
+      <div className="px-3 xl:px-4 mb-4">
+        <h1 className="text-base font-bold tracking-tight truncate">
+          <span className="xl:hidden">O</span>
+          <span className="hidden xl:inline">ORBIT</span>
+        </h1>
+      </div>
+      <nav className="flex-1 flex flex-col gap-0.5 px-2">
         {items.map(({ to, label, icon: Icon }) => (
           <Link
             key={to}
             to={to}
-            className="flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium text-muted-foreground transition-colors"
+            title={label}
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted/60 transition-colors"
             activeOptions={{ exact: to === "/" }}
-            activeProps={{ className: "text-primary" }}
+            activeProps={{ className: "bg-primary/15 text-primary" }}
           >
-            <Icon className="h-5 w-5" strokeWidth={2} />
-            <span>{label}</span>
+            <Icon className="h-5 w-5 shrink-0" strokeWidth={2} />
+            <span className="hidden xl:inline truncate">{label}</span>
           </Link>
         ))}
-      </div>
-    </nav>
+      </nav>
+    </aside>
   );
 }
