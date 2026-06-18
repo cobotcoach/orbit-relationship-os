@@ -17,6 +17,11 @@ export const Route = createFileRoute("/api/transcribe")({
         }
 
         const mime = audio.type.split(";")[0] || "audio/webm";
+        const allowed = new Set(["audio/webm", "audio/mp4", "audio/mpeg", "audio/wav", "audio/ogg"]);
+        if (!allowed.has(mime)) {
+          return new Response("Unsupported recording format", { status: 400 });
+        }
+
         const ext =
           mime === "audio/mp4" ? "mp4" :
           mime === "audio/mpeg" ? "mp3" :
@@ -27,11 +32,13 @@ export const Route = createFileRoute("/api/transcribe")({
         const upstream = new FormData();
         upstream.append("model", "openai/gpt-4o-mini-transcribe");
         upstream.append("file", audio, `recording.${ext}`);
-        upstream.append("stream", "true");
+        upstream.append("language", "en");
+        upstream.append("prompt", "Richard is capturing quick founder notes. Transcribe exactly once in natural English. Do not repeat phrases, do not invent filler words, and ignore silence or background noise.");
 
         const res = await fetch("https://ai.gateway.lovable.dev/v1/audio/transcriptions", {
           method: "POST",
-          headers: { Authorization: `Bearer ${key}` },
+          headers: { "Lovable-API-Key": key },
+          signal: request.signal,
           body: upstream,
         });
 
@@ -40,12 +47,7 @@ export const Route = createFileRoute("/api/transcribe")({
           return new Response(detail || `Transcription failed: ${res.status}`, { status: res.status });
         }
 
-        return new Response(res.body, {
-          headers: {
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache, no-transform",
-          },
-        });
+        return Response.json(await res.json());
       },
     },
   },
