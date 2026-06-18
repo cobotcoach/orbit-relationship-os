@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Home, Target, Lightbulb, Plus, MoreHorizontal, Users, TrendingUp, MessagesSquare, Wrench, Inbox, Radio, Upload, X } from "lucide-react";
+import { Home, Target, Lightbulb, Plus, MoreHorizontal, Users, TrendingUp, MessagesSquare, Wrench, Inbox, Radio, Upload, ClipboardList, X } from "lucide-react";
 import { useMode } from "@/lib/mode-context";
 
 const primary = [
@@ -16,6 +16,8 @@ const moreItems = [
   { to: "/operations", label: "Operations", icon: Wrench },
   { to: "/inbox", label: "Inbox", icon: Inbox },
   { to: "/intel", label: "Intel", icon: Radio },
+  { to: "/upload", label: "Upload", icon: Upload },
+  { to: "/log", label: "Capture Log", icon: ClipboardList },
   { to: "/import", label: "Import", icon: Upload },
 ] as const;
 

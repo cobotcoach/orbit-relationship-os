@@ -84,68 +84,91 @@ export const Route = createFileRoute("/api/ingest")({
         const providedTitle = typeof body.title === "string" ? body.title : null;
         const recordedAt = typeof body.recorded_at === "string" ? body.recorded_at : null;
         const durationSeconds = typeof body.duration_seconds === "number" ? body.duration_seconds : null;
-
-        const c = await classify(transcript);
-        const title = providedTitle || c.title;
+        const originalFilename = typeof body.original_filename === "string" ? body.original_filename : (providedTitle ?? null);
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-        if (c.type === "action") {
-          const { data, error } = await supabaseAdmin
-            .from("actions")
-            .insert({
-              title,
-              description: c.summary,
-              urgency: c.urgency,
-              status: "open",
-            })
-            .select("id")
-            .single();
-          if (error) return Response.json({ ok: false, error: error.message }, { status: 500 });
-          return Response.json({ ok: true, type: "action", id: data.id, mode: c.mode });
-        }
-
-        if (c.type === "intelligence" || c.type === "note") {
-          const { data, error } = await supabaseAdmin
-            .from("intelligence_items")
-            .insert({
-              source,
-              raw_input: transcript,
-              summary: c.summary,
-              topics: c.tags,
-              urgency: c.urgency,
-              extracted: {
-                title,
-                mode: c.mode,
-                type: c.type,
-                energy_score: c.energy_score,
-                recorded_at: recordedAt,
-                duration_seconds: durationSeconds,
-              },
-            })
-            .select("id")
-            .single();
-          if (error) return Response.json({ ok: false, error: error.message }, { status: 500 });
-          return Response.json({ ok: true, type: c.type, id: data.id, mode: c.mode });
-        }
-
-        // default: idea
-        const { data, error } = await supabaseAdmin
-          .from("ideas")
+        // 1. Log the capture first
+        const { data: logRow, error: logErr } = await supabaseAdmin
+          .from("captures_log")
           .insert({
-            raw_text: transcript,
-            title,
-            summary: c.summary,
-            mode: c.mode,
-            energy_score: c.energy_score,
-            tags: c.tags,
             source,
-            status: "new",
+            original_filename: originalFilename,
+            raw_text: transcript,
+            char_count: transcript.length,
+            status: "processing",
           })
           .select("id")
           .single();
-        if (error) return Response.json({ ok: false, error: error.message }, { status: 500 });
-        return Response.json({ ok: true, type: "idea", id: data.id, mode: c.mode });
+        const logId: string | null = logErr ? null : (logRow?.id ?? null);
+
+        const finishLog = async (patch: Record<string, unknown>) => {
+          if (!logId) return;
+          await supabaseAdmin.from("captures_log").update(patch).eq("id", logId);
+        };
+
+        try {
+          const c = await classify(transcript);
+          const title = providedTitle || c.title;
+
+          if (c.type === "action") {
+            const { data, error } = await supabaseAdmin
+              .from("actions")
+              .insert({ title, description: c.summary, urgency: c.urgency, status: "open" })
+              .select("id")
+              .single();
+            if (error) throw new Error(error.message);
+            await finishLog({ status: "done", routed_to: "actions", routed_id: data.id, mode: c.mode });
+            return Response.json({ ok: true, type: "action", id: data.id, mode: c.mode, log_id: logId });
+          }
+
+          if (c.type === "intelligence" || c.type === "note") {
+            const { data, error } = await supabaseAdmin
+              .from("intelligence_items")
+              .insert({
+                source,
+                raw_input: transcript,
+                summary: c.summary,
+                topics: c.tags,
+                urgency: c.urgency,
+                extracted: {
+                  title,
+                  mode: c.mode,
+                  type: c.type,
+                  energy_score: c.energy_score,
+                  recorded_at: recordedAt,
+                  duration_seconds: durationSeconds,
+                },
+              })
+              .select("id")
+              .single();
+            if (error) throw new Error(error.message);
+            await finishLog({ status: "done", routed_to: "intelligence_items", routed_id: data.id, mode: c.mode });
+            return Response.json({ ok: true, type: c.type, id: data.id, mode: c.mode, log_id: logId });
+          }
+
+          const { data, error } = await supabaseAdmin
+            .from("ideas")
+            .insert({
+              raw_text: transcript,
+              title,
+              summary: c.summary,
+              mode: c.mode,
+              energy_score: c.energy_score,
+              tags: c.tags,
+              source,
+              status: "new",
+            })
+            .select("id")
+            .single();
+          if (error) throw new Error(error.message);
+          await finishLog({ status: "done", routed_to: "ideas", routed_id: data.id, mode: c.mode });
+          return Response.json({ ok: true, type: "idea", id: data.id, mode: c.mode, log_id: logId });
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          await finishLog({ status: "failed", error_text: msg });
+          return Response.json({ ok: false, error: msg, log_id: logId }, { status: 500 });
+        }
       },
     },
   },

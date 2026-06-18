@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Contact, Activity, Action, Quote, AppEvent, LoanEquipment, SupportTicket, IntelligenceItem, SmartTopic, Idea, FocusItem } from "./types";
+import type { Contact, Activity, Action, Quote, AppEvent, LoanEquipment, SupportTicket, IntelligenceItem, SmartTopic, Idea, FocusItem, CaptureLogEntry } from "./types";
 
 export const db = {
   contacts: {

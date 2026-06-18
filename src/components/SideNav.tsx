@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Home, Users, TrendingUp, MessagesSquare, Wrench, Inbox, Radio, Lightbulb, Target } from "lucide-react";
+import { Home, Users, TrendingUp, MessagesSquare, Wrench, Inbox, Radio, Lightbulb, Target, Upload, ClipboardList } from "lucide-react";
 
 const items = [
   { to: "/", label: "Home", icon: Home },
@@ -11,6 +11,8 @@ const items = [
   { to: "/operations", label: "Ops", icon: Wrench },
   { to: "/inbox", label: "Inbox", icon: Inbox },
   { to: "/intel", label: "Intel", icon: Radio },
+  { to: "/upload", label: "Upload", icon: Upload },
+  { to: "/log", label: "Log", icon: ClipboardList },
 ] as const;
 
 export function SideNav() {
