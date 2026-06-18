@@ -17,6 +17,7 @@ export interface Contact {
   health_score: number;
   last_contact_date: string | null;
   tags: string[];
+  mode_tags: string[];
   notes: string | null;
   urgent: boolean;
   email: string | null;
@@ -24,6 +25,7 @@ export interface Contact {
   created_at: string;
   updated_at: string;
 }
+
 
 export interface Activity {
   id: string;
