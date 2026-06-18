@@ -537,3 +537,211 @@ function ideaTouchesSection(idea: Idea, slug: string): boolean {
   if (tags.includes(slug)) return true;
   return haystack.includes(slug);
 }
+
+// ---------------- Section Groups (4 clusters) ----------------
+const SECTION_GROUPS: { label: string; tagline: string; slugs: string[] }[] = [
+  { label: "Foundation", tagline: "What you are and who for", slugs: ["vision", "market", "brand", "messaging"] },
+  { label: "Business", tagline: "How it works commercially", slugs: ["monetisation", "financial", "legal"] },
+  { label: "Go To Market", tagline: "How you launch", slugs: ["gtm", "sales", "content"] },
+  { label: "Build & Operate", tagline: "What exists and how you're doing", slugs: ["product", "mindset"] },
+];
+
+function groupHealth(items: BusinessSection[]): { tone: "green" | "amber" | "red"; label: string } {
+  if (items.length === 0) return { tone: "amber", label: "—" };
+  if (items.some(s => s.status === "blocked")) return { tone: "red", label: "Blocked" };
+  if (items.some(s => (s.confidence_score ?? 5) < 7)) return { tone: "amber", label: "Needs work" };
+  return { tone: "green", label: "On track" };
+}
+
+function SectionGroupsPanel({
+  sections, decisions, synthRunningSlug, onChange,
+}: {
+  sections: BusinessSection[];
+  decisions: Decision[];
+  synthRunningSlug: string | null;
+  onChange: () => void;
+}) {
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(SECTION_GROUPS.map(g => [g.label, true]))
+  );
+
+  return (
+    <Section title="Business sections">
+      <div className="space-y-3">
+        {SECTION_GROUPS.map(group => {
+          const items = group.slugs
+            .map(slug => sections.find(s => s.slug === slug))
+            .filter((x): x is BusinessSection => Boolean(x));
+          const health = groupHealth(items);
+          const toneDot =
+            health.tone === "green" ? "bg-emerald-500"
+            : health.tone === "amber" ? "bg-amber-500"
+            : "bg-red-500";
+          const open = openGroups[group.label] !== false;
+          return (
+            <div key={group.label} className="rounded-xl bg-card border border-border overflow-hidden">
+              <button
+                onClick={() => setOpenGroups(o => ({ ...o, [group.label]: !open }))}
+                className="w-full p-3 flex items-center gap-3 text-left"
+              >
+                <span className={`h-2.5 w-2.5 rounded-full ${toneDot}`} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm font-semibold">{group.label}</h3>
+                    <span className="text-[10px] text-muted-foreground">· {group.tagline}</span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {items.length} sections · {health.label}
+                  </p>
+                </div>
+                {open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+              </button>
+              {open && (
+                <div className="border-t border-border p-3 grid grid-cols-1 lg:grid-cols-2 gap-3 bg-background/40">
+                  {items.map(sec => (
+                    <SectionCard
+                      key={sec.id}
+                      section={sec}
+                      decisions={decisions.filter(d => d.section_slug === sec.slug)}
+                      synthRunning={synthRunningSlug === sec.slug}
+                      onChange={onChange}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </Section>
+  );
+}
+
+// ---------------- Stuck Chat Panel ----------------
+function StuckChatPanel({
+  sections, ideas, intel, actions, topics,
+}: {
+  sections: BusinessSection[];
+  ideas: Idea[];
+  intel: { id: string; summary: string; topics: string[] | null; created_at: string }[];
+  actions: { id: string; title: string; urgency: string | null; status: string }[];
+  topics: { id: string; title: string; status: string; next_action: string | null }[];
+}) {
+  const ask = useServerFn(missionControlAsk);
+  const qc = useQueryClient();
+  const history = useQuery({ queryKey: ["mc:chats"], queryFn: () => db.missionChats.list(20) });
+  const [question, setQuestion] = useState("");
+  const [pending, setPending] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [streamedAnswer, setStreamedAnswer] = useState<string | null>(null);
+
+  async function submit() {
+    const q = question.trim();
+    if (!q || loading) return;
+    setLoading(true);
+    setPending(q);
+    setStreamedAnswer(null);
+    setQuestion("");
+    try {
+      const thirtyDaysAgo = Date.now() - 30 * 86_400_000;
+      const recentIdeas = ideas
+        .filter(i => new Date(i.created_at).getTime() >= thirtyDaysAgo)
+        .slice(0, 40)
+        .map(i => ({ title: i.title, summary: i.summary, tags: i.tags, energy: i.energy_score }));
+      const recentIntel = intel
+        .filter(i => new Date(i.created_at).getTime() >= thirtyDaysAgo)
+        .slice(0, 25)
+        .map(i => ({ summary: i.summary, topics: i.topics }));
+      const openActions = actions.filter(a => a.status !== "done").slice(0, 25).map(a => ({ title: a.title, urgency: a.urgency }));
+      const openTopics = topics.filter(t => t.status !== "resolved").slice(0, 25).map(t => ({ title: t.title, status: t.status, next: t.next_action }));
+      const res = await ask({
+        data: {
+          question: q,
+          sections: sections.map(s => ({
+            title: s.title,
+            slug: s.slug,
+            status: s.status,
+            confidence: s.confidence_score ?? 5,
+            ownerSummary: s.owner_summary,
+            nextAction: s.next_action,
+            aiSynthesis: s.ai_synthesis,
+            blockers: s.blockers ?? [],
+          })),
+          recentIdeas,
+          recentIntel,
+          openActions,
+          openTopics,
+        },
+      });
+      setStreamedAnswer(res.answer);
+      await db.missionChats.insert(q, res.answer);
+      qc.invalidateQueries({ queryKey: ["mc:chats"] });
+    } catch (e) {
+      setStreamedAnswer(`Couldn't get an answer: ${e instanceof Error ? e.message : "unknown error"}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <Section title="Where are you stuck right now?">
+      <div className="rounded-xl bg-card border border-border p-3 space-y-3">
+        <div className="flex gap-2">
+          <textarea
+            value={question}
+            onChange={e => setQuestion(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit(); }}
+            placeholder="Ask ORBIT anything — uses all 12 sections + last 30 days of captures as context. ⌘+Enter to send."
+            rows={2}
+            className="flex-1 rounded-md bg-secondary border border-border p-2 text-sm resize-none"
+          />
+          <button
+            onClick={submit}
+            disabled={loading || !question.trim()}
+            className="self-stretch px-4 rounded-md bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50 inline-flex items-center gap-1.5"
+          >
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+            Ask
+          </button>
+        </div>
+
+        {(pending || streamedAnswer || (history.data && history.data.length > 0)) && (
+          <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+            {pending && (
+              <div className="rounded-md bg-background border border-border p-2">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">You</p>
+                <p className="text-sm">{pending}</p>
+                {loading && (
+                  <p className="text-xs text-muted-foreground mt-2 inline-flex items-center gap-1.5">
+                    <Loader2 className="h-3 w-3 animate-spin" /> ORBIT is thinking…
+                  </p>
+                )}
+                {streamedAnswer && (
+                  <div className="mt-2 pt-2 border-t border-border">
+                    <p className="text-[10px] uppercase tracking-wider text-primary mb-1">ORBIT</p>
+                    <p className="text-sm whitespace-pre-wrap text-foreground/90">{streamedAnswer}</p>
+                  </div>
+                )}
+              </div>
+            )}
+            {(history.data ?? [])
+              .filter(h => !pending || h.question !== pending)
+              .map(h => (
+                <details key={h.id} className="rounded-md bg-background border border-border p-2">
+                  <summary className="text-sm cursor-pointer list-none flex items-start gap-2">
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Q</span>
+                    <span className="flex-1">{h.question}</span>
+                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">{new Date(h.created_at).toLocaleDateString()}</span>
+                  </summary>
+                  <div className="mt-2 pt-2 border-t border-border">
+                    <p className="text-[10px] uppercase tracking-wider text-primary mb-1">ORBIT</p>
+                    <p className="text-sm whitespace-pre-wrap text-foreground/90">{h.answer}</p>
+                  </div>
+                </details>
+              ))}
+          </div>
+        )}
+      </div>
+    </Section>
+  );
+}
