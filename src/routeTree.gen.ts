@@ -25,6 +25,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ContactsIndexRouteImport } from './routes/contacts.index'
 import { Route as ContactsNewRouteImport } from './routes/contacts.new'
 import { Route as ContactsIdRouteImport } from './routes/contacts.$id'
+import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
 import { Route as ApiIngestRouteImport } from './routes/api/ingest'
 
 const UploadRoute = UploadRouteImport.update({
@@ -107,6 +108,11 @@ const ContactsIdRoute = ContactsIdRouteImport.update({
   path: '/contacts/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTranscribeRoute = ApiTranscribeRouteImport.update({
+  id: '/api/transcribe',
+  path: '/api/transcribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiIngestRoute = ApiIngestRouteImport.update({
   id: '/api/ingest',
   path: '/api/ingest',
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/topics': typeof TopicsRoute
   '/upload': typeof UploadRoute
   '/api/ingest': typeof ApiIngestRoute
+  '/api/transcribe': typeof ApiTranscribeRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
   '/contacts/': typeof ContactsIndexRoute
@@ -147,6 +154,7 @@ export interface FileRoutesByTo {
   '/topics': typeof TopicsRoute
   '/upload': typeof UploadRoute
   '/api/ingest': typeof ApiIngestRoute
+  '/api/transcribe': typeof ApiTranscribeRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
   '/contacts': typeof ContactsIndexRoute
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/topics': typeof TopicsRoute
   '/upload': typeof UploadRoute
   '/api/ingest': typeof ApiIngestRoute
+  '/api/transcribe': typeof ApiTranscribeRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
   '/contacts/': typeof ContactsIndexRoute
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/topics'
     | '/upload'
     | '/api/ingest'
+    | '/api/transcribe'
     | '/contacts/$id'
     | '/contacts/new'
     | '/contacts/'
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/topics'
     | '/upload'
     | '/api/ingest'
+    | '/api/transcribe'
     | '/contacts/$id'
     | '/contacts/new'
     | '/contacts'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/topics'
     | '/upload'
     | '/api/ingest'
+    | '/api/transcribe'
     | '/contacts/$id'
     | '/contacts/new'
     | '/contacts/'
@@ -246,6 +258,7 @@ export interface RootRouteChildren {
   TopicsRoute: typeof TopicsRoute
   UploadRoute: typeof UploadRoute
   ApiIngestRoute: typeof ApiIngestRoute
+  ApiTranscribeRoute: typeof ApiTranscribeRoute
   ContactsIdRoute: typeof ContactsIdRoute
   ContactsNewRoute: typeof ContactsNewRoute
   ContactsIndexRoute: typeof ContactsIndexRoute
@@ -365,6 +378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/transcribe': {
+      id: '/api/transcribe'
+      path: '/api/transcribe'
+      fullPath: '/api/transcribe'
+      preLoaderRoute: typeof ApiTranscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/ingest': {
       id: '/api/ingest'
       path: '/api/ingest'
@@ -390,6 +410,7 @@ const rootRouteChildren: RootRouteChildren = {
   TopicsRoute: TopicsRoute,
   UploadRoute: UploadRoute,
   ApiIngestRoute: ApiIngestRoute,
+  ApiTranscribeRoute: ApiTranscribeRoute,
   ContactsIdRoute: ContactsIdRoute,
   ContactsNewRoute: ContactsNewRoute,
   ContactsIndexRoute: ContactsIndexRoute,
