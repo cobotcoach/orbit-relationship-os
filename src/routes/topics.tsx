@@ -8,7 +8,9 @@ import { Pill, EmptyState, Markdown } from "@/components/ui-bits";
 import { refreshTopicsFromText, extractTopicsFromText } from "@/lib/ai.functions";
 import { MessagesSquare, Plus, Sparkles, X, Loader2, Check, ArrowRight, AlertTriangle } from "lucide-react";
 import type { SmartTopic, Contact, TopicStatus } from "@/lib/types";
+import { useMode } from "@/lib/mode-context";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/topics")({
   head: () => ({ meta: [{ title: "ORBIT — Smart Topics" }] }),
@@ -224,12 +226,20 @@ function RefreshSheet({ onClose, topics, contacts }: { onClose: () => void; topi
 
 function TopicsPage() {
   const qc = useQueryClient();
+  const { activeMode, modeLabel, modeEmoji } = useMode();
   const { data: topics = [] } = useQuery({ queryKey: ["topics"], queryFn: db.topics.list });
   const { data: contacts = [] } = useQuery({ queryKey: ["contacts"], queryFn: db.contacts.list });
   const contactMap = useMemo(() => new Map(contacts.map(c => [c.id, c])), [contacts]);
   const [filter, setFilter] = useState<Filter>("all");
   const [showNew, setShowNew] = useState(false);
   const [showRefresh, setShowRefresh] = useState(false);
+
+  const scoped = useMemo(
+    () => (activeMode ? topics.filter(t => t.mode === activeMode) : topics),
+    [topics, activeMode],
+  );
+
+
 
   // Auto-mark stalled
   const computed = useMemo(() => topics.map(t => {
