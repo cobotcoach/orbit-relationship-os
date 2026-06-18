@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { Shell } from "@/components/Shell";
 import { ContactCard } from "@/components/ContactCard";
 import { Section, Pill, EmptyState } from "@/components/ui-bits";
-import { AlertTriangle, Package, TrendingUp, Radio, Plus, Upload, Lightbulb, Target, Sparkles, Sprout, Wand2 } from "lucide-react";
+import { AlertTriangle, Package, TrendingUp, Radio, Plus, Upload, Lightbulb, Sprout, Wand2 } from "lucide-react";
 import { gbp, daysSince } from "@/lib/format";
 import { useMode } from "@/lib/mode-context";
 
