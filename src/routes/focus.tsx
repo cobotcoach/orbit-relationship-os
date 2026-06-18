@@ -95,8 +95,9 @@ function FocusPage() {
 
   return (
     <Shell
-      title="Today's Focus"
+      title={activeMode ? `Today · ${modeLabel}` : "Today's Focus"}
       subtitle={new Date().toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}
+
       action={
         <button onClick={() => regenerate.mutate()} disabled={regenerate.isPending}
           className="inline-flex items-center gap-1.5 bg-primary/15 text-primary border border-primary/30 rounded-lg px-2.5 py-1.5 text-xs font-semibold disabled:opacity-50">
