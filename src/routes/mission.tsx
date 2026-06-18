@@ -1,19 +1,33 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, RefreshCw, Plus, Check, X, ChevronDown, ChevronRight, Search, AlertTriangle } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Loader2, RefreshCw, Plus, Check, X, ChevronDown, ChevronRight, Search, AlertTriangle, Cloud, CloudOff, ExternalLink, ArrowDown } from "lucide-react";
 import { db, mondayISO } from "@/lib/db";
 import { Shell } from "@/components/Shell";
 import { Pill, Section, EmptyState } from "@/components/ui-bits";
 import { useMode } from "@/lib/mode-context";
 import { synthesiseMissionControlSection, missionControlAsk } from "@/lib/ai.functions";
+import { syncSectionToDrive, pullFromDrive } from "@/lib/drive.functions";
 import type { BusinessSection, WeeklyCommitment, Decision, Idea, IntelligenceItem, Action, SmartTopic } from "@/lib/types";
 
 export const Route = createFileRoute("/mission")({
   head: () => ({ meta: [{ title: "ORBIT — Mission Control" }] }),
   component: MissionPage,
 });
+
+function timeAgo(iso: string | null): string {
+  if (!iso) return "never";
+  const diff = Date.now() - new Date(iso).getTime();
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ago`;
+}
 
 const LAUNCH_DATE = new Date("2026-07-31T00:00:00Z");
 function daysTo(d: Date) {
