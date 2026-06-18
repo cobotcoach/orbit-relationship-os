@@ -1,11 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { RefreshCw, Loader2 } from "lucide-react";
 import { db } from "@/lib/db";
 import { Shell } from "@/components/Shell";
 import { Pill } from "@/components/ui-bits";
 import { useMode } from "@/lib/mode-context";
+import { reclassifyIdea } from "@/lib/ingest.functions";
 import type { Idea } from "@/lib/types";
+
+const BUCKET_TAGS = ["monetisation", "sales", "content", "build", "launch", "product"] as const;
+const AUTO_RETAG_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
+function ideaHasBucketTag(idea: Idea): boolean {
+  const t = (idea.tags ?? []).map(x => x.toLowerCase());
+  return BUCKET_TAGS.some(b => t.includes(b));
+}
 
 export const Route = createFileRoute("/cobot-coach")({
   head: () => ({ meta: [{ title: "ORBIT — Cobot Coach" }] }),
@@ -120,6 +131,70 @@ function CobotCoachPage() {
   const topEnergy = [...cobotIdeas].sort((a, b) => b.energy_score - a.energy_score)[0];
   const topWild = [...wildIdeas].sort((a, b) => b.energy_score - a.energy_score)[0];
 
+  // ---------- auto re-tag ----------
+  const qc = useQueryClient();
+  const retag = useServerFn(reclassifyIdea);
+  const [retagQueue, setRetagQueue] = useState<string[]>([]);
+  const [retagRemaining, setRetagRemaining] = useState(0);
+  const [lastAutoRetagged, setLastAutoRetagged] = useLocalStorage<number>("cc.lastAutoRetagged", 0);
+  const processingRef = useRef(false);
+  const autoTriggeredRef = useRef(false);
+
+  const enqueueRetag = useCallback((ids: string[]) => {
+    if (ids.length === 0) return;
+    setRetagQueue(prev => {
+      const seen = new Set(prev);
+      const next = [...prev];
+      for (const id of ids) if (!seen.has(id)) { next.push(id); seen.add(id); }
+      return next;
+    });
+    setRetagRemaining(r => r + ids.length);
+  }, []);
+
+  // Auto-trigger once per 24h on load
+  useEffect(() => {
+    if (activeMode !== "cobot_coach") return;
+    if (autoTriggeredRef.current) return;
+    if (cobotIdeas.length === 0) return;
+    const sinceLast = Date.now() - (lastAutoRetagged || 0);
+    if (sinceLast < AUTO_RETAG_INTERVAL_MS) return;
+    autoTriggeredRef.current = true;
+    const needsRetag = cobotIdeas.filter(i => !ideaHasBucketTag(i) && (i.raw_text?.trim().length ?? 0) > 0).map(i => i.id);
+    if (needsRetag.length > 0) enqueueRetag(needsRetag);
+    setLastAutoRetagged(Date.now());
+  }, [activeMode, cobotIdeas, enqueueRetag, lastAutoRetagged, setLastAutoRetagged]);
+
+  // Process queue sequentially with 500ms gap
+  useEffect(() => {
+    if (processingRef.current) return;
+    if (retagQueue.length === 0) return;
+    processingRef.current = true;
+    let cancelled = false;
+    (async () => {
+      while (!cancelled) {
+        let nextId: string | undefined;
+        setRetagQueue(prev => {
+          if (prev.length === 0) return prev;
+          nextId = prev[0];
+          return prev.slice(1);
+        });
+        if (!nextId) break;
+        try { await retag({ data: { id: nextId } }); } catch { /* ignore individual failures */ }
+        setRetagRemaining(r => Math.max(0, r - 1));
+        await new Promise(res => setTimeout(res, 500));
+      }
+      processingRef.current = false;
+      await qc.invalidateQueries({ queryKey: ["ideas"] });
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [retagQueue.length > 0]);
+
+  const handleManualRetagAll = () => {
+    const ids = cobotIdeas.filter(i => (i.raw_text?.trim().length ?? 0) > 0).map(i => i.id);
+    enqueueRetag(ids);
+  };
+
   if (activeMode !== "cobot_coach") {
     return (
       <Shell title="Cobot Coach Command Centre" subtitle="Mode-specific dashboard">
@@ -137,8 +212,30 @@ function CobotCoachPage() {
     );
   }
 
+  const isRetagging = retagRemaining > 0;
+
   return (
-    <Shell title="Cobot Coach Command Centre" subtitle="One screen, every lever">
+    <Shell
+      title="Cobot Coach Command Centre"
+      subtitle="One screen, every lever"
+      action={
+        <button
+          onClick={handleManualRetagAll}
+          disabled={isRetagging}
+          className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border border-border hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Re-classify every Cobot Coach idea with the latest prompt"
+        >
+          {isRetagging ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+          Re-tag all
+        </button>
+      }
+    >
+      {isRetagging && (
+        <div className="mb-3 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-xs flex items-center gap-2">
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+          <span>Updating intelligence… ({retagRemaining} remaining)</span>
+        </div>
+      )}
       {/* Stat bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-5">
         <StatTile label="Ideas captured" value={cobotIdeas.length} />
