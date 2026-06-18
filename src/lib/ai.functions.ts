@@ -262,24 +262,25 @@ Be conservative — only update topics if the text genuinely speaks to them. Alw
 export const processIdea = createServerFn({ method: "POST" })
   .inputValidator((d: { text: string; mode?: string | null }) => d)
   .handler(async ({ data }) => {
+    const { ORBIT_CLASSIFIER_SYSTEM } = await import("./ingest.functions");
     const modeHint = data.mode
-      ? `\nThe user is currently in MODE: "${data.mode}". Strongly prefer this mode unless the content clearly belongs elsewhere.`
+      ? `\n\nThe user is currently in MODE: "${data.mode}". Strongly prefer this mode unless the content clearly belongs elsewhere.`
       : "";
-    const sys = `You are ORBIT. Extract a Smart Idea from a raw voice-note transcript. Score energy 1-10 based on excitement, conviction, specificity in the language (vague rambling = low, sharp + specific = high).
-Modes:
-- dobot: Dobot Robotics UK business — cobots, channel, sales, ops
-- cobot_coach: Cobot Coach product/coaching/training programme ideas
-- life: personal, family, health, lifestyle
-- wild: blue-sky / experimental / unrelated bold ideas${modeHint}
-Return JSON: {
-  "title": one punchy line (max 10 words),
-  "summary": 2-3 crisp sentences,
-  "mode": one of [dobot, cobot_coach, life, wild],
-  "energy_score": int 1-10,
-  "tags": string[] (max 5)
-}`;
-    const raw = await callAI({ system: sys, user: data.text, json: true });
-    return safeJSON(raw, { title: "Untitled idea", summary: "", mode: data.mode ?? "wild", energy_score: 5, tags: [] as string[] });
+    const raw = await callAI({ system: ORBIT_CLASSIFIER_SYSTEM + modeHint, user: data.text, json: true });
+    const parsed = safeJSON<{
+      title?: string;
+      summary?: string;
+      mode?: string;
+      energy_score?: number;
+      tags?: string[];
+    }>(raw, {});
+    return {
+      title: parsed.title ?? "Untitled idea",
+      summary: parsed.summary ?? "",
+      mode: parsed.mode ?? data.mode ?? "wild",
+      energy_score: typeof parsed.energy_score === "number" ? parsed.energy_score : 5,
+      tags: Array.isArray(parsed.tags) ? parsed.tags : [],
+    };
   });
 
 // 10. Generate today's Focus from ideas + open actions
