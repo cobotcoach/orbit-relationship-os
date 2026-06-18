@@ -6,6 +6,9 @@ import { Shell } from "@/components/Shell";
 import { Section, Pill, EmptyState } from "@/components/ui-bits";
 import { Plus, X } from "lucide-react";
 import { gbp } from "@/lib/format";
+import { useMode } from "@/lib/mode-context";
+import { IDEA_MODES } from "@/lib/types";
+
 
 const STAGES = ["prospect", "quoted", "negotiating", "won", "lost"] as const;
 const CHANNELS = ["all", "direct", "partner", "distributor"] as const;
@@ -17,20 +20,30 @@ export const Route = createFileRoute("/pipeline")({
 
 function Pipeline() {
   const qc = useQueryClient();
+  const { activeMode, modeLabel, modeEmoji } = useMode();
   const { data: quotes = [] } = useQuery({ queryKey: ["quotes"], queryFn: db.quotes.list });
   const { data: contacts = [] } = useQuery({ queryKey: ["contacts"], queryFn: db.contacts.list });
   const [channelFilter, setChannelFilter] = useState<typeof CHANNELS[number]>("all");
   const [showAdd, setShowAdd] = useState(false);
 
-  const filtered = quotes.filter(q => channelFilter === "all" || q.channel === channelFilter);
+  const filtered = quotes.filter(q => {
+    if (activeMode && q.mode !== activeMode) return false;
+    return channelFilter === "all" || q.channel === channelFilter;
+  });
+
 
   const totals: Record<string, number> = {};
   STAGES.forEach(s => { totals[s] = filtered.filter(q => q.stage === s).reduce((a, q) => a + Number(q.value || 0), 0); });
 
   return (
-    <Shell title="Pipeline" action={
-      <button onClick={() => setShowAdd(true)} className="h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center"><Plus className="h-5 w-5" /></button>
-    }>
+    <Shell
+      title="Pipeline"
+      subtitle={activeMode ? `${modeEmoji} ${modeLabel}` : undefined}
+      action={
+        <button onClick={() => setShowAdd(true)} className="h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center"><Plus className="h-5 w-5" /></button>
+      }
+    >
+
       <div className="-mx-4 px-4 overflow-x-auto no-scrollbar mb-3">
         <div className="flex gap-2 pb-1">
           {CHANNELS.map(c => (
