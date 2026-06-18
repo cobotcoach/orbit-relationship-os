@@ -13,6 +13,7 @@ import { Route as UploadRouteImport } from './routes/upload'
 import { Route as TopicsRouteImport } from './routes/topics'
 import { Route as PipelineRouteImport } from './routes/pipeline'
 import { Route as OperationsRouteImport } from './routes/operations'
+import { Route as MissionRouteImport } from './routes/mission'
 import { Route as LogRouteImport } from './routes/log'
 import { Route as IntelRouteImport } from './routes/intel'
 import { Route as InboxRouteImport } from './routes/inbox'
@@ -44,6 +45,11 @@ const PipelineRoute = PipelineRouteImport.update({
 const OperationsRoute = OperationsRouteImport.update({
   id: '/operations',
   path: '/operations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MissionRoute = MissionRouteImport.update({
+  id: '/mission',
+  path: '/mission',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LogRoute = LogRouteImport.update({
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/inbox': typeof InboxRoute
   '/intel': typeof IntelRoute
   '/log': typeof LogRoute
+  '/mission': typeof MissionRoute
   '/operations': typeof OperationsRoute
   '/pipeline': typeof PipelineRoute
   '/topics': typeof TopicsRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/inbox': typeof InboxRoute
   '/intel': typeof IntelRoute
   '/log': typeof LogRoute
+  '/mission': typeof MissionRoute
   '/operations': typeof OperationsRoute
   '/pipeline': typeof PipelineRoute
   '/topics': typeof TopicsRoute
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/inbox': typeof InboxRoute
   '/intel': typeof IntelRoute
   '/log': typeof LogRoute
+  '/mission': typeof MissionRoute
   '/operations': typeof OperationsRoute
   '/pipeline': typeof PipelineRoute
   '/topics': typeof TopicsRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/inbox'
     | '/intel'
     | '/log'
+    | '/mission'
     | '/operations'
     | '/pipeline'
     | '/topics'
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/inbox'
     | '/intel'
     | '/log'
+    | '/mission'
     | '/operations'
     | '/pipeline'
     | '/topics'
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '/inbox'
     | '/intel'
     | '/log'
+    | '/mission'
     | '/operations'
     | '/pipeline'
     | '/topics'
@@ -228,6 +240,7 @@ export interface RootRouteChildren {
   InboxRoute: typeof InboxRoute
   IntelRoute: typeof IntelRoute
   LogRoute: typeof LogRoute
+  MissionRoute: typeof MissionRoute
   OperationsRoute: typeof OperationsRoute
   PipelineRoute: typeof PipelineRoute
   TopicsRoute: typeof TopicsRoute
@@ -266,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/operations'
       fullPath: '/operations'
       preLoaderRoute: typeof OperationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mission': {
+      id: '/mission'
+      path: '/mission'
+      fullPath: '/mission'
+      preLoaderRoute: typeof MissionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/log': {
@@ -364,6 +384,7 @@ const rootRouteChildren: RootRouteChildren = {
   InboxRoute: InboxRoute,
   IntelRoute: IntelRoute,
   LogRoute: LogRoute,
+  MissionRoute: MissionRoute,
   OperationsRoute: OperationsRoute,
   PipelineRoute: PipelineRoute,
   TopicsRoute: TopicsRoute,
