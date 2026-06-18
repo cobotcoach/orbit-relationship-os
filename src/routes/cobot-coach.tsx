@@ -131,6 +131,70 @@ function CobotCoachPage() {
   const topEnergy = [...cobotIdeas].sort((a, b) => b.energy_score - a.energy_score)[0];
   const topWild = [...wildIdeas].sort((a, b) => b.energy_score - a.energy_score)[0];
 
+  // ---------- auto re-tag ----------
+  const qc = useQueryClient();
+  const retag = useServerFn(reclassifyIdea);
+  const [retagQueue, setRetagQueue] = useState<string[]>([]);
+  const [retagRemaining, setRetagRemaining] = useState(0);
+  const [lastAutoRetagged, setLastAutoRetagged] = useLocalStorage<number>("cc.lastAutoRetagged", 0);
+  const processingRef = useRef(false);
+  const autoTriggeredRef = useRef(false);
+
+  const enqueueRetag = useCallback((ids: string[]) => {
+    if (ids.length === 0) return;
+    setRetagQueue(prev => {
+      const seen = new Set(prev);
+      const next = [...prev];
+      for (const id of ids) if (!seen.has(id)) { next.push(id); seen.add(id); }
+      return next;
+    });
+    setRetagRemaining(r => r + ids.length);
+  }, []);
+
+  // Auto-trigger once per 24h on load
+  useEffect(() => {
+    if (activeMode !== "cobot_coach") return;
+    if (autoTriggeredRef.current) return;
+    if (cobotIdeas.length === 0) return;
+    const sinceLast = Date.now() - (lastAutoRetagged || 0);
+    if (sinceLast < AUTO_RETAG_INTERVAL_MS) return;
+    autoTriggeredRef.current = true;
+    const needsRetag = cobotIdeas.filter(i => !ideaHasBucketTag(i) && (i.raw_text?.trim().length ?? 0) > 0).map(i => i.id);
+    if (needsRetag.length > 0) enqueueRetag(needsRetag);
+    setLastAutoRetagged(Date.now());
+  }, [activeMode, cobotIdeas, enqueueRetag, lastAutoRetagged, setLastAutoRetagged]);
+
+  // Process queue sequentially with 500ms gap
+  useEffect(() => {
+    if (processingRef.current) return;
+    if (retagQueue.length === 0) return;
+    processingRef.current = true;
+    let cancelled = false;
+    (async () => {
+      while (!cancelled) {
+        let nextId: string | undefined;
+        setRetagQueue(prev => {
+          if (prev.length === 0) return prev;
+          nextId = prev[0];
+          return prev.slice(1);
+        });
+        if (!nextId) break;
+        try { await retag({ data: { id: nextId } }); } catch { /* ignore individual failures */ }
+        setRetagRemaining(r => Math.max(0, r - 1));
+        await new Promise(res => setTimeout(res, 500));
+      }
+      processingRef.current = false;
+      await qc.invalidateQueries({ queryKey: ["ideas"] });
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [retagQueue.length > 0]);
+
+  const handleManualRetagAll = () => {
+    const ids = cobotIdeas.filter(i => (i.raw_text?.trim().length ?? 0) > 0).map(i => i.id);
+    enqueueRetag(ids);
+  };
+
   if (activeMode !== "cobot_coach") {
     return (
       <Shell title="Cobot Coach Command Centre" subtitle="Mode-specific dashboard">
