@@ -51,6 +51,7 @@ function FocusCard({ item, index, onUpdate }: { item: FocusItem; index: number; 
 
 function FocusPage() {
   const qc = useQueryClient();
+  const { activeMode, modeLabel } = useMode();
   const { data: items = [] } = useQuery({ queryKey: ["focus", "today"], queryFn: db.focus.today });
   const generateFn = useServerFn(generateFocus);
 
@@ -61,10 +62,12 @@ function FocusPage() {
       const recentIdeas = ideas.slice(0, 10);
       const res = await generateFn({
         data: {
-          ideas: recentIdeas.map(i => ({ id: i.id, title: i.title, summary: i.summary, category: i.category, energy_score: i.energy_score })),
+          ideas: recentIdeas.map(i => ({ id: i.id, title: i.title, summary: i.summary, mode: i.mode, energy_score: i.energy_score })),
           actions: openActions.map(a => ({ id: a.id, title: a.title, urgency: a.urgency, contact_id: a.contact_id, due_date: a.due_date })),
+          mode: activeMode,
         },
       });
+
       const today = todayISO();
       await db.focus.clearForDate(today);
       for (const it of res.items ?? []) {
