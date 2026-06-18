@@ -8,7 +8,7 @@ import { Shell } from "@/components/Shell";
 import { Pill, Section, EmptyState } from "@/components/ui-bits";
 import { useMode } from "@/lib/mode-context";
 import { synthesiseMissionControlSection, missionControlAsk } from "@/lib/ai.functions";
-import type { BusinessSection, WeeklyCommitment, Decision, Idea } from "@/lib/types";
+import type { BusinessSection, WeeklyCommitment, Decision, Idea, IntelligenceItem, Action, SmartTopic } from "@/lib/types";
 
 export const Route = createFileRoute("/mission")({
   head: () => ({ meta: [{ title: "ORBIT — Mission Control" }] }),
