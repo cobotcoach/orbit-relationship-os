@@ -198,7 +198,7 @@ function MissionPage() {
       title="Mission Control"
       subtitle={`Cobot Coach · ${weekLabel()}`}
       action={
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
           <div className={`text-xs font-semibold ${countdownColor}`}>
             {days}d to Jul 31
           </div>
@@ -210,6 +210,14 @@ function MissionPage() {
             {synthRunning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
             Synthesise
           </button>
+          <button
+            onClick={() => syncAll(sections.data ?? [])}
+            disabled={syncProgress !== null}
+            className="h-9 px-3 rounded-full bg-secondary text-secondary-foreground text-xs font-medium inline-flex items-center gap-1.5 tap active:scale-95 disabled:opacity-50"
+          >
+            {syncProgress ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Cloud className="h-3.5 w-3.5" />}
+            Sync All to Drive
+          </button>
         </div>
       }
     >
@@ -217,6 +225,12 @@ function MissionPage() {
         <div className="mb-3 rounded-xl bg-primary/10 border border-primary/30 px-3 py-2 text-xs text-primary inline-flex items-center gap-2">
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
           Synthesising {synthRunning} ({synthProgress.current}/{synthProgress.total})
+        </div>
+      )}
+      {syncProgress && (
+        <div className="mb-3 ml-2 rounded-xl bg-secondary border border-border px-3 py-2 text-xs inline-flex items-center gap-2">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          Syncing {syncProgress.label}… ({syncProgress.current}/{syncProgress.total})
         </div>
       )}
 
@@ -234,12 +248,16 @@ function MissionPage() {
         lastWeekTotal={lastWeekTotal}
         sections={sections.data ?? []}
         onChange={() => qc.invalidateQueries({ queryKey: ["mc:thisWeek"] })}
+        syncSection={syncSection}
       />
 
       <SectionGroupsPanel
         sections={sections.data ?? []}
         decisions={decisions.data ?? []}
         synthRunningSlug={synthRunning}
+        syncingSlug={syncingSlug}
+        syncSection={syncSection}
+        pullSection={pullSection}
         onChange={() => {
           qc.invalidateQueries({ queryKey: ["mc:sections"] });
           qc.invalidateQueries({ queryKey: ["mc:decisions"] });
