@@ -356,17 +356,30 @@ function WeeklyCommitmentsPanel({
 
 // ---------------- Section Card ----------------
 function SectionCard({
-  section, decisions, synthRunning, onChange,
+  section, decisions, synthRunning, syncing, onChange, syncSection, pullSection,
 }: {
   section: BusinessSection;
   decisions: Decision[];
   synthRunning: boolean;
+  syncing: boolean;
   onChange: () => void;
+  syncSection: (slug: string) => Promise<void>;
+  pullSection: (slug: string) => Promise<void>;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [showUpdate, setShowUpdate] = useState(false);
   const [showDecisions, setShowDecisions] = useState(false);
   const conf = section.confidence_score ?? 5;
+
+  const synced = section.drive_synced_at;
+  const hoursOld = synced ? (Date.now() - new Date(synced).getTime()) / 3_600_000 : null;
+  const driveTone =
+    syncing ? "text-primary"
+    : !synced ? "text-muted-foreground"
+    : (hoursOld ?? 0) <= 1 ? "text-emerald-500"
+    : (hoursOld ?? 0) <= 24 ? "text-emerald-500"
+    : "text-amber-500";
+  const DriveIcon = !synced && !syncing ? CloudOff : Cloud;
 
   return (
     <div className="rounded-xl bg-card border border-border p-3 flex flex-col gap-2">
@@ -416,8 +429,63 @@ function SectionCard({
         </button>
       </div>
 
-      {showUpdate && <UpdateDrawer section={section} onClose={() => setShowUpdate(false)} onSaved={() => { onChange(); setShowUpdate(false); }} />}
-      {showDecisions && <DecisionsDrawer section={section} decisions={decisions} onClose={() => setShowDecisions(false)} onSaved={onChange} />}
+      {/* Drive status row */}
+      <div className="mt-1 pt-2 border-t border-border flex items-center gap-2 text-[11px]">
+        <button
+          onClick={() => syncSection(section.slug)}
+          disabled={syncing}
+          title={synced ? "Sync to Drive" : "Create Drive doc"}
+          className={`inline-flex items-center gap-1 ${driveTone} disabled:opacity-50`}
+        >
+          {syncing
+            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            : <DriveIcon className="h-3.5 w-3.5" />}
+          <span>{syncing ? "Syncing…" : synced ? `Synced ${timeAgo(synced)}` : "Never synced"}</span>
+        </button>
+        {section.drive_doc_url && (
+          <a
+            href={section.drive_doc_url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
+          >
+            Open in Drive <ExternalLink className="h-3 w-3" />
+          </a>
+        )}
+        {section.drive_doc_id && (
+          <button
+            onClick={() => pullSection(section.slug)}
+            disabled={syncing}
+            title="Pull Drive doc into ORBIT"
+            className="ml-auto inline-flex items-center gap-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
+          >
+            Pull <ArrowDown className="h-3 w-3" />
+          </button>
+        )}
+      </div>
+
+      {showUpdate && (
+        <UpdateDrawer
+          section={section}
+          onClose={() => setShowUpdate(false)}
+          onSaved={() => {
+            onChange();
+            setShowUpdate(false);
+            syncSection(section.slug).catch(err => console.error("Auto-sync after update failed", err));
+          }}
+        />
+      )}
+      {showDecisions && (
+        <DecisionsDrawer
+          section={section}
+          decisions={decisions}
+          onClose={() => setShowDecisions(false)}
+          onSaved={() => {
+            onChange();
+            syncSection(section.slug).catch(err => console.error("Auto-sync after decision failed", err));
+          }}
+        />
+      )}
     </div>
   );
 }
