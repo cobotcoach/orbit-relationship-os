@@ -21,6 +21,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ContactsIndexRouteImport } from './routes/contacts.index'
 import { Route as ContactsNewRouteImport } from './routes/contacts.new'
 import { Route as ContactsIdRouteImport } from './routes/contacts.$id'
+import { Route as ApiIngestRouteImport } from './routes/api/ingest'
 
 const TopicsRoute = TopicsRouteImport.update({
   id: '/topics',
@@ -82,6 +83,11 @@ const ContactsIdRoute = ContactsIdRouteImport.update({
   path: '/contacts/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiIngestRoute = ApiIngestRouteImport.update({
+  id: '/api/ingest',
+  path: '/api/ingest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/operations': typeof OperationsRoute
   '/pipeline': typeof PipelineRoute
   '/topics': typeof TopicsRoute
+  '/api/ingest': typeof ApiIngestRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
   '/contacts/': typeof ContactsIndexRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/operations': typeof OperationsRoute
   '/pipeline': typeof PipelineRoute
   '/topics': typeof TopicsRoute
+  '/api/ingest': typeof ApiIngestRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
   '/contacts': typeof ContactsIndexRoute
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/operations': typeof OperationsRoute
   '/pipeline': typeof PipelineRoute
   '/topics': typeof TopicsRoute
+  '/api/ingest': typeof ApiIngestRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
   '/contacts/': typeof ContactsIndexRoute
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/operations'
     | '/pipeline'
     | '/topics'
+    | '/api/ingest'
     | '/contacts/$id'
     | '/contacts/new'
     | '/contacts/'
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/operations'
     | '/pipeline'
     | '/topics'
+    | '/api/ingest'
     | '/contacts/$id'
     | '/contacts/new'
     | '/contacts'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/operations'
     | '/pipeline'
     | '/topics'
+    | '/api/ingest'
     | '/contacts/$id'
     | '/contacts/new'
     | '/contacts/'
@@ -181,6 +193,7 @@ export interface RootRouteChildren {
   OperationsRoute: typeof OperationsRoute
   PipelineRoute: typeof PipelineRoute
   TopicsRoute: typeof TopicsRoute
+  ApiIngestRoute: typeof ApiIngestRoute
   ContactsIdRoute: typeof ContactsIdRoute
   ContactsNewRoute: typeof ContactsNewRoute
   ContactsIndexRoute: typeof ContactsIndexRoute
@@ -272,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ingest': {
+      id: '/api/ingest'
+      path: '/api/ingest'
+      fullPath: '/api/ingest'
+      preLoaderRoute: typeof ApiIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -285,6 +305,7 @@ const rootRouteChildren: RootRouteChildren = {
   OperationsRoute: OperationsRoute,
   PipelineRoute: PipelineRoute,
   TopicsRoute: TopicsRoute,
+  ApiIngestRoute: ApiIngestRoute,
   ContactsIdRoute: ContactsIdRoute,
   ContactsNewRoute: ContactsNewRoute,
   ContactsIndexRoute: ContactsIndexRoute,
