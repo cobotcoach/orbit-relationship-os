@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Home, Target, Lightbulb, Plus, MoreHorizontal, Users, TrendingUp, MessagesSquare, Wrench, Inbox, Radio, Upload, ClipboardList, X } from "lucide-react";
+import { Home, Target, Lightbulb, Plus, MoreHorizontal, Users, TrendingUp, MessagesSquare, Wrench, Inbox, Radio, Upload, ClipboardList, Rocket, X } from "lucide-react";
 import { useMode } from "@/lib/mode-context";
 
 const primary = [
@@ -10,6 +10,7 @@ const primary = [
 ] as const;
 
 const moreItems = [
+  { to: "/cobot-coach", label: "Cobot Coach", icon: Rocket },
   { to: "/contacts", label: "Contacts", icon: Users },
   { to: "/pipeline", label: "Pipeline", icon: TrendingUp },
   { to: "/topics", label: "Topics", icon: MessagesSquare },
