@@ -238,6 +238,12 @@ function TopicsPage() {
     () => (activeMode ? topics.filter(t => t.mode === activeMode) : topics),
     [topics, activeMode],
   );
+  // re-use scoped via computed: filter computed by mode
+  const computedScoped = useMemo(
+    () => (activeMode ? computed.filter(t => t.mode === activeMode) : computed),
+    [computed, activeMode],
+  );
+
 
 
 
@@ -250,14 +256,15 @@ function TopicsPage() {
   }), [topics]);
 
   const filtered = useMemo(() => {
-    let list = computed.filter(t => t.status !== "resolved");
+    let list = computedScoped.filter(t => t.status !== "resolved");
     if (filter === "need_action") list = list.filter(t => t.status === "waiting_on_you");
     else if (filter === "waiting") list = list.filter(t => t.status === "waiting_on_them");
     else if (filter === "stalled") list = list.filter(t => t.status === "stalled");
     const rank: Record<string, number> = { waiting_on_you: 0, active: 1, waiting_on_them: 2, stalled: 3 };
     list.sort((a, b) => (rank[a.status] ?? 9) - (rank[b.status] ?? 9));
     return list;
-  }, [computed, filter]);
+  }, [computedScoped, filter]);
+
 
   const update = useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: Partial<SmartTopic> }) => db.topics.update(id, patch),
@@ -265,14 +272,17 @@ function TopicsPage() {
   });
 
   const counts = {
-    all: computed.filter(t => t.status !== "resolved").length,
-    need_action: computed.filter(t => t.status === "waiting_on_you").length,
-    waiting: computed.filter(t => t.status === "waiting_on_them").length,
-    stalled: computed.filter(t => t.status === "stalled").length,
+    all: computedScoped.filter(t => t.status !== "resolved").length,
+    need_action: computedScoped.filter(t => t.status === "waiting_on_you").length,
+    waiting: computedScoped.filter(t => t.status === "waiting_on_them").length,
+    stalled: computedScoped.filter(t => t.status === "stalled").length,
   };
 
+  const subtitle = `${counts.all} open · ${counts.need_action} need action${activeMode ? ` · ${modeEmoji} ${modeLabel}` : ""}`;
+
   return (
-    <Shell title="Smart Topics" subtitle={`${counts.all} open · ${counts.need_action} need action`} action={
+    <Shell title="Smart Topics" subtitle={subtitle} action={
+
       <button onClick={() => setShowRefresh(true)}
         className="inline-flex items-center gap-1.5 bg-primary/15 text-primary border border-primary/30 rounded-lg px-2.5 py-1.5 text-xs font-semibold">
         <Sparkles className="h-3.5 w-3.5" /> Refresh with AI
