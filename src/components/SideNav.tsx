@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Home, Users, TrendingUp, MessagesSquare, Wrench, Inbox, Radio, Lightbulb, Target, Upload, ClipboardList, Rocket } from "lucide-react";
+import { Home, Users, TrendingUp, MessagesSquare, Wrench, Inbox, Radio, Lightbulb, Target, Upload, ClipboardList, Rocket, Crosshair } from "lucide-react";
+import { useMode } from "@/lib/mode-context";
 
-const items = [
+const baseItems = [
   { to: "/", label: "Home", icon: Home },
   { to: "/focus", label: "Focus", icon: Target },
   { to: "/cobot-coach", label: "Cobot Coach", icon: Rocket },
