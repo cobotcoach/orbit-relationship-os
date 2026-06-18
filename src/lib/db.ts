@@ -173,7 +173,6 @@ export const db = {
       if (error) throw error;
     },
   },
-  },
   log: {
     list: async (): Promise<CaptureLogEntry[]> => {
       const { data, error } = await supabase.from("captures_log").select("*").order("created_at", { ascending: false }).limit(200);
