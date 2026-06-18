@@ -7,7 +7,7 @@ import { db, mondayISO } from "@/lib/db";
 import { Shell } from "@/components/Shell";
 import { Pill, Section, EmptyState } from "@/components/ui-bits";
 import { useMode } from "@/lib/mode-context";
-import { synthesiseMissionControlSection } from "@/lib/ai.functions";
+import { synthesiseMissionControlSection, missionControlAsk } from "@/lib/ai.functions";
 import type { BusinessSection, WeeklyCommitment, Decision, Idea } from "@/lib/types";
 
 export const Route = createFileRoute("/mission")({
