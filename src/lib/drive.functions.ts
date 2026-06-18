@@ -224,11 +224,11 @@ export const syncSectionToDrive = createServerFn({ method: "POST" })
     const fourWeeksAgo = new Date(Date.now() - 28 * 86_400_000).toISOString().slice(0, 10);
 
     const [decRes, ideasRes, commitsRes] = await Promise.all([
-      supabase.from("decisions").select("title,decision,reasoning,made_at,section_slug")
+      supabaseAdmin.from("decisions").select("title,decision,reasoning,made_at,section_slug")
         .eq("section_slug", data.slug).order("made_at", { ascending: false }).limit(50),
-      supabase.from("ideas").select("title,summary,tags,energy_score,created_at,mode")
+      supabaseAdmin.from("ideas").select("title,summary,tags,energy_score,created_at,mode")
         .eq("mode", "cobot_coach").gte("created_at", since).order("created_at", { ascending: false }).limit(200),
-      supabase.from("weekly_commitments").select("week_starting,commitment,status,section_slug")
+      supabaseAdmin.from("weekly_commitments").select("week_starting,commitment,status,section_slug")
         .eq("section_slug", data.slug).gte("week_starting", fourWeeksAgo)
         .order("week_starting", { ascending: false }),
     ]);
@@ -257,7 +257,7 @@ export const syncSectionToDrive = createServerFn({ method: "POST" })
     await replaceDocContent(docId, content);
 
     const syncedAt = new Date().toISOString();
-    const { error: updErr } = await supabase
+    const { error: updErr } = await supabaseAdmin
       .from("business_sections")
       .update({
         drive_doc_id: docId,
@@ -275,7 +275,7 @@ export const syncSectionToDrive = createServerFn({ method: "POST" })
 export const pullFromDrive = createServerFn({ method: "POST" })
   .inputValidator((d: { slug: string }) => d)
   .handler(async ({ data }) => {
-    const { data: sec, error: secErr } = await supabase
+    const { data: sec, error: secErr } = await supabaseAdmin
       .from("business_sections")
       .select("slug,drive_doc_id,owner_summary")
       .eq("slug", data.slug)
@@ -312,7 +312,7 @@ export const pullFromDrive = createServerFn({ method: "POST" })
       patch.owner_summary = owner;
       updated = true;
     }
-    const { error: updErr } = await supabase
+    const { error: updErr } = await supabaseAdmin
       .from("business_sections")
       .update(patch as never)
       .eq("slug", data.slug);
