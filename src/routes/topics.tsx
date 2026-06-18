@@ -238,22 +238,15 @@ function TopicsPage() {
     () => (activeMode ? topics.filter(t => t.mode === activeMode) : topics),
     [topics, activeMode],
   );
-  // re-use scoped via computed: filter computed by mode
-  const computedScoped = useMemo(
-    () => (activeMode ? computed.filter(t => t.mode === activeMode) : computed),
-    [computed, activeMode],
-  );
-
-
-
 
   // Auto-mark stalled
-  const computed = useMemo(() => topics.map(t => {
+  const computedScoped = useMemo(() => scoped.map(t => {
     if (t.status !== "resolved" && t.status !== "stalled" && daysSince(t.last_activity) >= 14) {
       return { ...t, status: "stalled" as TopicStatus };
     }
     return t;
-  }), [topics]);
+  }), [scoped]);
+
 
   const filtered = useMemo(() => {
     let list = computedScoped.filter(t => t.status !== "resolved");
