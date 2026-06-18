@@ -258,6 +258,34 @@ Be conservative — only update topics if the text genuinely speaks to them. Alw
     return safeJSON<TopicRefreshResult>(raw, { updates: [], new_topics: [], summary: "" });
   });
 
+// 9. Process raw idea text into structured Idea
+export const processIdea = createServerFn({ method: "POST" })
+  .inputValidator((d: { text: string }) => d)
+  .handler(async ({ data }) => {
+    const sys = `You are ORBIT. Extract a Smart Idea from a raw voice-note transcript. Score energy 1-10 based on excitement, conviction, specificity in the language (vague rambling = low, sharp + specific = high).
+Return JSON: {
+  "title": one punchy line (max 10 words),
+  "summary": 2-3 crisp sentences,
+  "category": one of [cobot_coach, dobot, personal, product, content, other],
+  "energy_score": int 1-10,
+  "tags": string[] (max 5)
+}`;
+    const raw = await callAI({ system: sys, user: data.text, json: true });
+    return safeJSON(raw, { title: "Untitled idea", summary: "", category: "other", energy_score: 5, tags: [] as string[] });
+  });
+
+// 10. Generate today's Focus from ideas + open actions
+export const generateFocus = createServerFn({ method: "POST" })
+  .inputValidator((d: { ideas: unknown[]; actions: unknown[] }) => d)
+  .handler(async ({ data }) => {
+    const sys = `You are ORBIT, Richard's strategic focus engine (UK Country Manager, Dobot Robotics). Read recent ideas and open actions. Return EXACTLY 3 focus items for today, prioritised by impact + momentum.
+Return JSON: { "items": [{ "title": short imperative, "why": one sentence on why this matters NOW, "priority": 1|2|3, "linked_idea_id": id|null, "linked_contact_id": id|null }] }
+Priority 1 = most important. Pick the highest-leverage 3 — not just the loudest.`;
+    const user = `RECENT IDEAS:\n${JSON.stringify(data.ideas, null, 2)}\n\nOPEN ACTIONS:\n${JSON.stringify(data.actions, null, 2)}`;
+    const raw = await callAI({ system: sys, user, json: true });
+    return safeJSON(raw, { items: [] as { title: string; why: string; priority: number; linked_idea_id: string | null; linked_contact_id: string | null }[] });
+  });
+
 // 8. Extract topics from a paste (quick-add)
 export const extractTopicsFromText = createServerFn({ method: "POST" })
   .inputValidator((d: { text: string; contacts: { id: string; name: string; company: string | null }[] }) => d)

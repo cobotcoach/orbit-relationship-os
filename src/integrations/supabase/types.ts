@@ -189,6 +189,102 @@ export type Database = {
         }
         Relationships: []
       }
+      focus_items: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          linked_contact_id: string | null
+          linked_idea_id: string | null
+          priority: number
+          status: string
+          title: string
+          updated_at: string
+          why: string | null
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          linked_contact_id?: string | null
+          linked_idea_id?: string | null
+          priority?: number
+          status?: string
+          title: string
+          updated_at?: string
+          why?: string | null
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          linked_contact_id?: string | null
+          linked_idea_id?: string | null
+          priority?: number
+          status?: string
+          title?: string
+          updated_at?: string
+          why?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "focus_items_linked_contact_id_fkey"
+            columns: ["linked_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "focus_items_linked_idea_id_fkey"
+            columns: ["linked_idea_id"]
+            isOneToOne: false
+            referencedRelation: "ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ideas: {
+        Row: {
+          category: string
+          created_at: string
+          energy_score: number
+          id: string
+          raw_text: string
+          source: string
+          status: string
+          summary: string | null
+          tags: string[]
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          energy_score?: number
+          id?: string
+          raw_text: string
+          source?: string
+          status?: string
+          summary?: string | null
+          tags?: string[]
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          energy_score?: number
+          id?: string
+          raw_text?: string
+          source?: string
+          status?: string
+          summary?: string | null
+          tags?: string[]
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       intelligence_items: {
         Row: {
           contact_ids: string[]
