@@ -260,25 +260,36 @@ Be conservative — only update topics if the text genuinely speaks to them. Alw
 
 // 9. Process raw idea text into structured Idea
 export const processIdea = createServerFn({ method: "POST" })
-  .inputValidator((d: { text: string }) => d)
+  .inputValidator((d: { text: string; mode?: string | null }) => d)
   .handler(async ({ data }) => {
+    const modeHint = data.mode
+      ? `\nThe user is currently in MODE: "${data.mode}". Strongly prefer this mode unless the content clearly belongs elsewhere.`
+      : "";
     const sys = `You are ORBIT. Extract a Smart Idea from a raw voice-note transcript. Score energy 1-10 based on excitement, conviction, specificity in the language (vague rambling = low, sharp + specific = high).
+Modes:
+- dobot: Dobot Robotics UK business — cobots, channel, sales, ops
+- cobot_coach: Cobot Coach product/coaching/training programme ideas
+- life: personal, family, health, lifestyle
+- wild: blue-sky / experimental / unrelated bold ideas${modeHint}
 Return JSON: {
   "title": one punchy line (max 10 words),
   "summary": 2-3 crisp sentences,
-  "category": one of [cobot_coach, dobot, personal, product, content, other],
+  "mode": one of [dobot, cobot_coach, life, wild],
   "energy_score": int 1-10,
   "tags": string[] (max 5)
 }`;
     const raw = await callAI({ system: sys, user: data.text, json: true });
-    return safeJSON(raw, { title: "Untitled idea", summary: "", category: "other", energy_score: 5, tags: [] as string[] });
+    return safeJSON(raw, { title: "Untitled idea", summary: "", mode: data.mode ?? "wild", energy_score: 5, tags: [] as string[] });
   });
 
 // 10. Generate today's Focus from ideas + open actions
 export const generateFocus = createServerFn({ method: "POST" })
-  .inputValidator((d: { ideas: unknown[]; actions: unknown[] }) => d)
+  .inputValidator((d: { ideas: unknown[]; actions: unknown[]; mode?: string | null }) => d)
   .handler(async ({ data }) => {
-    const sys = `You are ORBIT, Richard's strategic focus engine (UK Country Manager, Dobot Robotics). Read recent ideas and open actions. Return EXACTLY 3 focus items for today, prioritised by impact + momentum.
+    const modeHint = data.mode
+      ? `\nThe user is currently in MODE: "${data.mode}". Weight focus items relevant to this mode much higher; only include other-mode items if genuinely critical today.`
+      : "";
+    const sys = `You are ORBIT, Richard's strategic focus engine (UK Country Manager, Dobot Robotics). Read recent ideas and open actions. Return EXACTLY 3 focus items for today, prioritised by impact + momentum.${modeHint}
 Return JSON: { "items": [{ "title": short imperative, "why": one sentence on why this matters NOW, "priority": 1|2|3, "linked_idea_id": id|null, "linked_contact_id": id|null }] }
 Priority 1 = most important. Pick the highest-leverage 3 — not just the loudest.`;
     const user = `RECENT IDEAS:\n${JSON.stringify(data.ideas, null, 2)}\n\nOPEN ACTIONS:\n${JSON.stringify(data.actions, null, 2)}`;

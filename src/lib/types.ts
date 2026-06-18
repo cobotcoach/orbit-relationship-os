@@ -114,7 +114,7 @@ export interface IntelligenceItem {
   created_at: string;
 }
 
-export type IdeaCategory = "cobot_coach" | "dobot" | "personal" | "product" | "content" | "other";
+export type IdeaMode = "dobot" | "cobot_coach" | "life" | "wild";
 export type IdeaStatus = "new" | "reviewing" | "active" | "parked" | "done";
 
 export interface Idea {
@@ -122,7 +122,7 @@ export interface Idea {
   raw_text: string;
   title: string | null;
   summary: string | null;
-  category: IdeaCategory | string;
+  mode: IdeaMode | string;
   energy_score: number;
   status: IdeaStatus | string;
   tags: string[];
@@ -144,13 +144,11 @@ export interface FocusItem {
   updated_at: string;
 }
 
-export const IDEA_CATEGORIES: { value: IdeaCategory; label: string }[] = [
-  { value: "cobot_coach", label: "Cobot Coach" },
-  { value: "dobot", label: "Dobot" },
-  { value: "product", label: "Product" },
-  { value: "content", label: "Content" },
-  { value: "personal", label: "Personal" },
-  { value: "other", label: "Other" },
+export const IDEA_MODES: { value: IdeaMode; label: string; emoji: string; color: string }[] = [
+  { value: "dobot", label: "Dobot", emoji: "🔵", color: "blue" },
+  { value: "cobot_coach", label: "Cobot Coach", emoji: "🟠", color: "orange" },
+  { value: "life", label: "Life", emoji: "🟢", color: "green" },
+  { value: "wild", label: "Wild Ideas", emoji: "🟣", color: "purple" },
 ];
 
 export type TopicStatus = "waiting_on_them" | "waiting_on_you" | "active" | "stalled" | "resolved";
