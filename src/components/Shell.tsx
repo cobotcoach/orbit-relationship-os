@@ -1,9 +1,11 @@
 import { ReactNode } from "react";
 import { BottomNav } from "./BottomNav";
 import { SideNav } from "./SideNav";
-import { ModeSwitcher } from "@/lib/mode-context";
+import { ModeSwitcher, useMode } from "@/lib/mode-context";
+import { CaptureSheet } from "./CaptureSheet";
 
 export function Shell({ title, subtitle, action, children }: { title: string; subtitle?: string; action?: ReactNode; children: ReactNode }) {
+  const { captureOpen, closeCapture, activeMode } = useMode();
   return (
     <div className="min-h-screen bg-background pb-24 md:pb-6 md:pl-16 xl:pl-56">
       <SideNav />
@@ -23,6 +25,7 @@ export function Shell({ title, subtitle, action, children }: { title: string; su
       </header>
       <main className="mx-auto max-w-5xl px-4 py-4">{children}</main>
       <BottomNav />
+      {captureOpen && <CaptureSheet onClose={closeCapture} defaultMode={activeMode} />}
     </div>
   );
 }

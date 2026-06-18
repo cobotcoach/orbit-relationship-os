@@ -4,8 +4,10 @@ import { db } from "@/lib/db";
 import { Shell } from "@/components/Shell";
 import { ContactCard } from "@/components/ContactCard";
 import { Section, Pill, EmptyState } from "@/components/ui-bits";
-import { AlertTriangle, Package, TrendingUp, Radio, Plus, Upload } from "lucide-react";
+import { AlertTriangle, Package, TrendingUp, Radio, Plus, Upload, Lightbulb, Sprout, Wand2 } from "lucide-react";
 import { gbp, daysSince } from "@/lib/format";
+import { useMode } from "@/lib/mode-context";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "ORBIT — Home" }] }),
@@ -13,10 +15,14 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  const { activeMode, modeLabel, modeEmoji } = useMode();
   const contacts = useQuery({ queryKey: ["contacts"], queryFn: db.contacts.list });
   const loans = useQuery({ queryKey: ["loans"], queryFn: db.loans.list });
   const quotes = useQuery({ queryKey: ["quotes"], queryFn: db.quotes.list });
   const intel = useQuery({ queryKey: ["intel"], queryFn: db.intel.list });
+  const ideas = useQuery({ queryKey: ["ideas"], queryFn: db.ideas.list });
+  const focus = useQuery({ queryKey: ["focus", "today"], queryFn: db.focus.today });
+
 
   const priority = (contacts.data ?? []).filter(c => {
     const days = daysSince(c.last_contact_date) ?? 999;
@@ -29,6 +35,61 @@ function Home() {
 
   const openPipeline = (quotes.data ?? []).filter(q => !["won", "lost"].includes(q.stage));
   const openValue = openPipeline.reduce((s, q) => s + Number(q.value || 0), 0);
+
+  const allIdeas = ideas.data ?? [];
+
+  const wildCount = allIdeas.filter(i => i.mode === "wild").length;
+  const cobotIdeas = allIdeas.filter(i => i.mode === "cobot_coach").length;
+  const topFocus = (focus.data ?? [])[0];
+
+  const modeCard = (() => {
+    if (!activeMode || activeMode === "dobot") {
+      return (
+        <div className="rounded-2xl bg-card border border-primary/30 p-4 flex items-center gap-4">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary"><TrendingUp className="h-6 w-6" /></div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{modeEmoji} Dobot mode</p>
+            <p className="text-lg font-bold tracking-tight truncate">{gbp(openValue)} pipeline · {openPipeline.length} open</p>
+          </div>
+        </div>
+      );
+    }
+    if (activeMode === "cobot_coach") {
+      return (
+        <div className="rounded-2xl bg-card border border-amber-500/30 p-4 flex items-center gap-4">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-amber-500/15 text-amber-500"><Lightbulb className="h-6 w-6" /></div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{modeEmoji} {modeLabel}</p>
+            <p className="text-sm font-semibold truncate">{cobotIdeas} idea{cobotIdeas === 1 ? "" : "s"} captured</p>
+            {topFocus ? <p className="text-xs text-muted-foreground truncate">Top focus: {topFocus.title}</p> : <p className="text-xs text-muted-foreground">No focus set — regenerate in /focus</p>}
+          </div>
+        </div>
+      );
+    }
+    if (activeMode === "life") {
+      return (
+        <div className="rounded-2xl bg-card border border-green-500/30 p-4 flex items-center gap-4">
+          <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-green-500/15 text-green-500"><Sprout className="h-6 w-6" /></div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{modeEmoji} {modeLabel}</p>
+            <p className="text-sm font-semibold">Life dashboard coming soon</p>
+            <p className="text-xs text-muted-foreground">Capture life ideas via +</p>
+          </div>
+        </div>
+      );
+    }
+    // wild
+    return (
+      <div className="rounded-2xl bg-card border border-purple-500/30 p-4 flex items-center gap-4">
+        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-purple-500/15 text-purple-400"><Wand2 className="h-6 w-6" /></div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{modeEmoji} {modeLabel}</p>
+          <p className="text-sm font-semibold">{wildCount} wild idea{wildCount === 1 ? "" : "s"}</p>
+          <p className="text-xs text-muted-foreground">Blue-sky thinking lives here</p>
+        </div>
+      </div>
+    );
+  })();
 
   return (
     <Shell
@@ -45,6 +106,8 @@ function Home() {
         </div>
       }
     >
+      <div className="mb-4">{modeCard}</div>
+
       <Section title="Today's priority contacts">
         {priority.length === 0 ? (
           <EmptyState title="All caught up" hint="No urgent or overdue contacts" />

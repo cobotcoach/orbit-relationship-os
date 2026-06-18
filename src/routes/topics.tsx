@@ -8,7 +8,9 @@ import { Pill, EmptyState, Markdown } from "@/components/ui-bits";
 import { refreshTopicsFromText, extractTopicsFromText } from "@/lib/ai.functions";
 import { MessagesSquare, Plus, Sparkles, X, Loader2, Check, ArrowRight, AlertTriangle } from "lucide-react";
 import type { SmartTopic, Contact, TopicStatus } from "@/lib/types";
+import { useMode } from "@/lib/mode-context";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/topics")({
   head: () => ({ meta: [{ title: "ORBIT — Smart Topics" }] }),
@@ -98,7 +100,7 @@ function TopicCard({ topic, contact, onUpdate }: { topic: SmartTopic; contact?: 
   );
 }
 
-function NewTopicSheet({ onClose, contacts }: { onClose: () => void; contacts: Contact[] }) {
+function NewTopicSheet({ onClose, contacts, defaultMode }: { onClose: () => void; contacts: Contact[]; defaultMode: string }) {
   const qc = useQueryClient();
   const [title, setTitle] = useState("");
   const [contactId, setContactId] = useState("");
@@ -112,10 +114,12 @@ function NewTopicSheet({ onClose, contacts }: { onClose: () => void; contacts: C
       status,
       next_action: nextAction.trim() || null,
       source: "manual",
+      mode: defaultMode,
     }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["topics"] }); toast.success("Topic added"); onClose(); },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   return (
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur flex items-end sm:items-center justify-center" onClick={onClose}>
@@ -224,6 +228,7 @@ function RefreshSheet({ onClose, topics, contacts }: { onClose: () => void; topi
 
 function TopicsPage() {
   const qc = useQueryClient();
+  const { activeMode, modeLabel, modeEmoji } = useMode();
   const { data: topics = [] } = useQuery({ queryKey: ["topics"], queryFn: db.topics.list });
   const { data: contacts = [] } = useQuery({ queryKey: ["contacts"], queryFn: db.contacts.list });
   const contactMap = useMemo(() => new Map(contacts.map(c => [c.id, c])), [contacts]);
@@ -231,23 +236,30 @@ function TopicsPage() {
   const [showNew, setShowNew] = useState(false);
   const [showRefresh, setShowRefresh] = useState(false);
 
+  const scoped = useMemo(
+    () => (activeMode ? topics.filter(t => t.mode === activeMode) : topics),
+    [topics, activeMode],
+  );
+
   // Auto-mark stalled
-  const computed = useMemo(() => topics.map(t => {
+  const computedScoped = useMemo(() => scoped.map(t => {
     if (t.status !== "resolved" && t.status !== "stalled" && daysSince(t.last_activity) >= 14) {
       return { ...t, status: "stalled" as TopicStatus };
     }
     return t;
-  }), [topics]);
+  }), [scoped]);
+
 
   const filtered = useMemo(() => {
-    let list = computed.filter(t => t.status !== "resolved");
+    let list = computedScoped.filter(t => t.status !== "resolved");
     if (filter === "need_action") list = list.filter(t => t.status === "waiting_on_you");
     else if (filter === "waiting") list = list.filter(t => t.status === "waiting_on_them");
     else if (filter === "stalled") list = list.filter(t => t.status === "stalled");
     const rank: Record<string, number> = { waiting_on_you: 0, active: 1, waiting_on_them: 2, stalled: 3 };
     list.sort((a, b) => (rank[a.status] ?? 9) - (rank[b.status] ?? 9));
     return list;
-  }, [computed, filter]);
+  }, [computedScoped, filter]);
+
 
   const update = useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: Partial<SmartTopic> }) => db.topics.update(id, patch),
@@ -255,14 +267,17 @@ function TopicsPage() {
   });
 
   const counts = {
-    all: computed.filter(t => t.status !== "resolved").length,
-    need_action: computed.filter(t => t.status === "waiting_on_you").length,
-    waiting: computed.filter(t => t.status === "waiting_on_them").length,
-    stalled: computed.filter(t => t.status === "stalled").length,
+    all: computedScoped.filter(t => t.status !== "resolved").length,
+    need_action: computedScoped.filter(t => t.status === "waiting_on_you").length,
+    waiting: computedScoped.filter(t => t.status === "waiting_on_them").length,
+    stalled: computedScoped.filter(t => t.status === "stalled").length,
   };
 
+  const subtitle = `${counts.all} open · ${counts.need_action} need action${activeMode ? ` · ${modeEmoji} ${modeLabel}` : ""}`;
+
   return (
-    <Shell title="Smart Topics" subtitle={`${counts.all} open · ${counts.need_action} need action`} action={
+    <Shell title="Smart Topics" subtitle={subtitle} action={
+
       <button onClick={() => setShowRefresh(true)}
         className="inline-flex items-center gap-1.5 bg-primary/15 text-primary border border-primary/30 rounded-lg px-2.5 py-1.5 text-xs font-semibold">
         <Sparkles className="h-3.5 w-3.5" /> Refresh with AI
@@ -302,7 +317,7 @@ function TopicsPage() {
         <Plus className="h-6 w-6" />
       </button>
 
-      {showNew && <NewTopicSheet onClose={() => setShowNew(false)} contacts={contacts} />}
+      {showNew && <NewTopicSheet onClose={() => setShowNew(false)} contacts={contacts} defaultMode={activeMode ?? "dobot"} />}
       {showRefresh && <RefreshSheet onClose={() => setShowRefresh(false)} topics={topics} contacts={contacts} />}
     </Shell>
   );

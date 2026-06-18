@@ -5,6 +5,8 @@ import { db } from "@/lib/db";
 import { Shell } from "@/components/Shell";
 import { Pill, EmptyState } from "@/components/ui-bits";
 import { Radio } from "lucide-react";
+import { ModeBadge } from "@/lib/mode-context";
+
 
 export const Route = createFileRoute("/intel")({
   head: () => ({ meta: [{ title: "ORBIT — Intelligence" }] }),
@@ -19,8 +21,9 @@ function IntelPage() {
   const filtered = items.filter(i => !filterContact || i.contact_ids.includes(filterContact));
 
   return (
-    <Shell title="Intelligence Feed" subtitle={`${items.length} items`}>
+    <Shell title="Intelligence Feed" subtitle={`${items.length} items`} action={<ModeBadge />}>
       <select value={filterContact} onChange={e => setFilterContact(e.target.value)}
+
         className="w-full bg-card border border-border rounded-xl px-3 py-2 text-sm mb-4">
         <option value="">All contacts</option>
         {contacts.map(c => <option key={c.id} value={c.id}>{c.name} — {c.company}</option>)}

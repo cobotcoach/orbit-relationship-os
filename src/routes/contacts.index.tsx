@@ -7,9 +7,11 @@ import { Shell } from "@/components/Shell";
 import { ContactCard } from "@/components/ContactCard";
 import { Section, Pill, EmptyState, Markdown } from "@/components/ui-bits";
 import { CONTACT_TYPES, FOLDERS_BY_TYPE, ContactType, Contact } from "@/lib/types";
-import { Plus, Search, Sparkles, X, Loader2 } from "lucide-react";
+import { Plus, Search, Sparkles, X, Loader2, Sprout } from "lucide-react";
 import { generateSegmentBriefing } from "@/lib/ai.functions";
 import { folderLabel, typeLabel } from "@/lib/format";
+import { useMode } from "@/lib/mode-context";
+
 
 export const Route = createFileRoute("/contacts/")({
   head: () => ({ meta: [{ title: "ORBIT — Contacts" }] }),
@@ -18,8 +20,10 @@ export const Route = createFileRoute("/contacts/")({
 
 function ContactsPage() {
   const qc = useQueryClient();
+  const { activeMode, modeLabel, modeEmoji } = useMode();
   const { data: contacts = [] } = useQuery({ queryKey: ["contacts"], queryFn: db.contacts.list });
   const [activeType, setActiveType] = useState<ContactType>("channel_partner");
+
   const [activeFolder, setActiveFolder] = useState<string>("active");
   const [search, setSearch] = useState("");
   const [healthFilter, setHealthFilter] = useState<"all" | "low" | "mid" | "high">("all");
@@ -41,7 +45,16 @@ function ContactsPage() {
     setActiveFolder(folders[0].value);
   }
 
-  const filtered = contacts.filter(c => {
+  // Mode-aware filter
+  const modeFiltered = contacts.filter(c => {
+    if (!activeMode || activeMode === "dobot") return true;
+    if (activeMode === "cobot_coach") {
+      return (c.mode_tags ?? []).includes("cobot_coach") || c.type === "prospect" || c.type === "ecosystem_partner";
+    }
+    return false; // life, wild → no contacts
+  });
+
+  const filtered = modeFiltered.filter(c => {
     if (c.type !== activeType) return false;
     if (c.folder !== activeFolder) return false;
     if (search && !`${c.name} ${c.company ?? ""}`.toLowerCase().includes(search.toLowerCase())) return false;
@@ -51,17 +64,28 @@ function ContactsPage() {
     return true;
   });
 
+  const lifeOrWild = activeMode === "life" || activeMode === "wild";
   void qc;
+
 
   return (
     <Shell
       title="Contacts"
+      subtitle={activeMode ? `${modeEmoji} ${modeLabel}` : undefined}
       action={
         <Link to="/contacts/new" className="h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center tap active:scale-95">
           <Plus className="h-5 w-5" />
         </Link>
       }
     >
+      {lifeOrWild ? (
+        <EmptyState
+          icon={<Sprout className="h-7 w-7" />}
+          title={`No contacts in ${modeLabel}`}
+          hint="This mode is for personal organisation — switch to Dobot or Cobot Coach to see contacts."
+        />
+      ) : (<>
+
       {/* Type tabs */}
       <div className="-mx-4 px-4 overflow-x-auto no-scrollbar">
         <div className="flex gap-2 pb-2">
@@ -129,9 +153,11 @@ function ContactsPage() {
           <div className="space-y-2">{filtered.map(c => <ContactCard key={c.id} contact={c} />)}</div>
         )}
       </Section>
+      </>)}
 
       {briefingOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-end" onClick={() => setBriefingOpen(false)}>
+
           <div className="w-full max-w-xl mx-auto bg-card border-t border-border rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">

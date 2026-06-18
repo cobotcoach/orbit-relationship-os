@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import type { IdeaMode } from "./types";
 import { IDEA_MODES } from "./types";
 
@@ -7,16 +7,20 @@ type ModeValue = IdeaMode | "all";
 interface ModeCtx {
   mode: ModeValue;
   setMode: (m: ModeValue) => void;
-  activeMode: IdeaMode | null; // null when "all"
+  activeMode: IdeaMode | null;
   modeLabel: string;
+  modeEmoji: string;
+  captureOpen: boolean;
+  openCapture: () => void;
+  closeCapture: () => void;
 }
 
 const Ctx = createContext<ModeCtx | null>(null);
-
 const STORAGE_KEY = "orbit.activeMode";
 
 export function ModeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<ModeValue>("dobot");
+  const [captureOpen, setCaptureOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -32,12 +36,19 @@ export function ModeProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem(STORAGE_KEY, m); } catch {/* ignore */}
   };
 
-  const activeMode = mode === "all" ? null : mode;
-  const modeLabel = mode === "all"
-    ? "All modes"
-    : IDEA_MODES.find(m => m.value === mode)?.label ?? mode;
+  const openCapture = useCallback(() => setCaptureOpen(true), []);
+  const closeCapture = useCallback(() => setCaptureOpen(false), []);
 
-  return <Ctx.Provider value={{ mode, setMode, activeMode, modeLabel }}>{children}</Ctx.Provider>;
+  const activeMode = mode === "all" ? null : mode;
+  const meta = IDEA_MODES.find(m => m.value === mode);
+  const modeLabel = mode === "all" ? "All modes" : meta?.label ?? mode;
+  const modeEmoji = mode === "all" ? "✨" : meta?.emoji ?? "";
+
+  return (
+    <Ctx.Provider value={{ mode, setMode, activeMode, modeLabel, modeEmoji, captureOpen, openCapture, closeCapture }}>
+      {children}
+    </Ctx.Provider>
+  );
 }
 
 export function useMode(): ModeCtx {
@@ -79,5 +90,14 @@ export function ModeSwitcher() {
         All
       </button>
     </div>
+  );
+}
+
+export function ModeBadge({ className }: { className?: string }) {
+  const { modeLabel, modeEmoji } = useMode();
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full bg-card border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground ${className ?? ""}`}>
+      <span>{modeEmoji}</span><span>Viewing: {modeLabel}</span>
+    </span>
   );
 }
