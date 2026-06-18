@@ -7,6 +7,8 @@ import { Shell } from "@/components/Shell";
 import { Section, Pill, Markdown } from "@/components/ui-bits";
 import { Sparkles, Loader2, Plus, Check, Paperclip } from "lucide-react";
 import { processInbox } from "@/lib/ai.functions";
+import { ModeBadge } from "@/lib/mode-context";
+
 
 export const Route = createFileRoute("/inbox")({
   head: () => ({ meta: [{ title: "ORBIT — Inbox" }] }),
@@ -66,8 +68,9 @@ function InboxPage() {
   });
 
   return (
-    <Shell title="Inbox Processor" subtitle="Paste email, transcript, or comms">
+    <Shell title="Inbox Processor" subtitle="Paste email, transcript, or comms" action={<ModeBadge />}>
       <textarea
+
         value={text}
         onChange={e => setText(e.target.value)}
         rows={8}
