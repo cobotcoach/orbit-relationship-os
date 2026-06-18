@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { ClipboardList, ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { Shell } from "@/components/Shell";
 import { db } from "@/lib/db";
 import type { CaptureLogEntry } from "@/lib/types";
