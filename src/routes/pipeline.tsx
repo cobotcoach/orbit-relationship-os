@@ -96,25 +96,27 @@ function Pipeline() {
         )}
       </Section>
 
-      {showAdd && <AddQuoteSheet onClose={() => setShowAdd(false)} onSaved={() => { setShowAdd(false); qc.invalidateQueries({ queryKey: ["quotes"] }); }} />}
+      {showAdd && <AddQuoteSheet defaultMode={activeMode ?? "dobot"} onClose={() => setShowAdd(false)} onSaved={() => { setShowAdd(false); qc.invalidateQueries({ queryKey: ["quotes"] }); }} />}
     </Shell>
   );
 }
 
-function AddQuoteSheet({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+function AddQuoteSheet({ onClose, onSaved, defaultMode }: { onClose: () => void; onSaved: () => void; defaultMode: string }) {
   const { data: contacts = [] } = useQuery({ queryKey: ["contacts"], queryFn: db.contacts.list });
   const [ref, setRef] = useState(""); const [contactId, setContactId] = useState<string>("");
   const [products, setProducts] = useState(""); const [value, setValue] = useState("");
   const [stage, setStage] = useState<typeof STAGES[number]>("quoted");
   const [channel, setChannel] = useState<"direct"|"partner"|"distributor">("direct");
+  const [mode, setMode] = useState<string>(defaultMode);
 
   const save = useMutation({
     mutationFn: async () => db.quotes.insert({
-      quote_ref: ref, contact_id: contactId || null, products, value: Number(value || 0), stage, channel,
+      quote_ref: ref, contact_id: contactId || null, products, value: Number(value || 0), stage, channel, mode,
       company: contacts.find(c => c.id === contactId)?.company ?? null,
     }),
     onSuccess: onSaved,
   });
+
 
   const i = "w-full bg-input border border-border rounded-lg px-3 py-2 text-sm";
   return (
@@ -133,6 +135,10 @@ function AddQuoteSheet({ onClose, onSaved }: { onClose: () => void; onSaved: () 
           <select value={channel} onChange={e => setChannel(e.target.value as never)} className={i}>
             <option value="direct">direct</option><option value="partner">partner</option><option value="distributor">distributor</option>
           </select>
+          <select value={mode} onChange={e => setMode(e.target.value)} className={i}>
+            {IDEA_MODES.map(m => <option key={m.value} value={m.value}>{m.emoji} {m.label}</option>)}
+          </select>
+
           <button onClick={() => save.mutate()} disabled={!ref || save.isPending}
             className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-semibold disabled:opacity-50">
             {save.isPending ? "Saving…" : "Save quote"}
