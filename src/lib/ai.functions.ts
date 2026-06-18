@@ -309,5 +309,47 @@ Return JSON: { "topics": [{ "title": short, "contact_hint": name|null, "status":
     return safeJSON(raw, { topics: [] as { title: string; contact_hint: string | null; status: string; last_update: string; next_action: string | null }[] });
   });
 
+// 11. Synthesise a single Mission Control section
+const MISSION_CONTROL_SYSTEM = `You are ORBIT, the strategic AI advisor for Richard Mawson who is building Cobot Coach (WMH Robotics Ltd) — a brand-agnostic collaborative robotics platform connecting SI integrators with UK manufacturing SMEs.
+
+Key context:
+- Richard is still employed at Dobot Robotics UK as Country Manager while building this
+- Target: launch to first partners by end of July 2026
+- Monetisation model: currently undecided between Founding Partner fees (£10-15k) vs free launch with future paid tier
+- 5 known launch blockers: dead CTAs on solution pages, no legal pages, no partner commercial page, no cookie consent, no analytics
+- Warm SI targets: JTR Automation (Jamie Ross), Labman, Astech Projects
+- Platform URL: cobotcoach.com
+- The biggest risk is losing focus across too many workstreams
+
+Based on ALL captured data below, write a sharp 3-4 sentence synthesis that:
+1. States honestly where this section currently stands
+2. Identifies the single biggest unresolved question or blocker
+3. Recommends the ONE next action with the most leverage
+4. Flags any contradiction or confusion in the captured thinking
+
+Be direct. Name the real issue. Don't be encouraging for its own sake.`;
+
+export const synthesiseMissionControlSection = createServerFn({ method: "POST" })
+  .inputValidator((d: {
+    sectionTitle: string;
+    sectionSlug: string;
+    ownerSummary: string | null;
+    blockers: string[];
+    nextAction: string | null;
+    confidence: number;
+    ideas: unknown[];
+    actions: unknown[];
+    intel: unknown[];
+    topics: unknown[];
+    recentCommitments: unknown[];
+  }) => d)
+  .handler(async ({ data }) => {
+    const sys = MISSION_CONTROL_SYSTEM + `\n\nYou are synthesising the SECTION: ${data.sectionTitle}`;
+    const user = `OWNER SUMMARY:\n${data.ownerSummary || "(none written)"}\n\nCURRENT BLOCKERS:\n${(data.blockers || []).join("\n") || "(none logged)"}\n\nCURRENT NEXT ACTION:\n${data.nextAction || "(not set)"}\n\nCONFIDENCE: ${data.confidence}/10\n\nRECENT IDEAS (last 30d, cobot_coach mode):\n${JSON.stringify(data.ideas, null, 2)}\n\nOPEN ACTIONS:\n${JSON.stringify(data.actions, null, 2)}\n\nRECENT INTELLIGENCE:\n${JSON.stringify(data.intel, null, 2)}\n\nOPEN SMART TOPICS:\n${JSON.stringify(data.topics, null, 2)}\n\nRECENT WEEKLY COMMITMENTS (last 4 weeks):\n${JSON.stringify(data.recentCommitments, null, 2)}`;
+    const text = await callAI({ system: sys, user });
+    return { synthesis: text.trim() };
+  });
+
+
 
 
