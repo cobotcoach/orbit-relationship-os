@@ -212,8 +212,30 @@ function CobotCoachPage() {
     );
   }
 
+  const isRetagging = retagRemaining > 0;
+
   return (
-    <Shell title="Cobot Coach Command Centre" subtitle="One screen, every lever">
+    <Shell
+      title="Cobot Coach Command Centre"
+      subtitle="One screen, every lever"
+      action={
+        <button
+          onClick={handleManualRetagAll}
+          disabled={isRetagging}
+          className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border border-border hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Re-classify every Cobot Coach idea with the latest prompt"
+        >
+          {isRetagging ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+          Re-tag all
+        </button>
+      }
+    >
+      {isRetagging && (
+        <div className="mb-3 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-xs flex items-center gap-2">
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+          <span>Updating intelligence… ({retagRemaining} remaining)</span>
+        </div>
+      )}
       {/* Stat bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-5">
         <StatTile label="Ideas captured" value={cobotIdeas.length} />
