@@ -155,6 +155,8 @@ function MissionPage() {
           ai_synthesis: res.synthesis,
           ai_synthesised_at: new Date().toISOString(),
         });
+        // Trigger Drive sync after synthesis completes for this section
+        syncSection(sec.slug).catch(err => console.error("Auto-sync after synthesis failed", err));
       } catch (e) {
         console.error("Synth failed for", sec.slug, e);
       }
