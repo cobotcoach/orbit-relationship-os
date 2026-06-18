@@ -153,6 +153,8 @@ function ContactsPage() {
           <div className="space-y-2">{filtered.map(c => <ContactCard key={c.id} contact={c} />)}</div>
         )}
       </Section>
+      </>)}
+
 
       {briefingOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-end" onClick={() => setBriefingOpen(false)}>
