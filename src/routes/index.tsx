@@ -56,14 +56,15 @@ function Home() {
     }
     if (activeMode === "cobot_coach") {
       return (
-        <div className="rounded-2xl bg-card border border-amber-500/30 p-4 flex items-center gap-4">
+        <Link to="/mission" className="block rounded-2xl bg-card border border-amber-500/30 p-4 flex items-center gap-4 tap active:scale-[0.99]">
           <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-amber-500/15 text-amber-500"><Lightbulb className="h-6 w-6" /></div>
           <div className="min-w-0 flex-1">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{modeEmoji} {modeLabel}</p>
             <p className="text-sm font-semibold truncate">{cobotIdeas} idea{cobotIdeas === 1 ? "" : "s"} captured</p>
-            {topFocus ? <p className="text-xs text-muted-foreground truncate">Top focus: {topFocus.title}</p> : <p className="text-xs text-muted-foreground">No focus set — regenerate in /focus</p>}
+            <p className="text-xs text-amber-500 font-medium">Open Mission Control →</p>
+            {topFocus && <p className="text-xs text-muted-foreground truncate">Top focus: {topFocus.title}</p>}
           </div>
-        </div>
+        </Link>
       );
     }
     if (activeMode === "life") {
