@@ -155,8 +155,9 @@ function ContactsPage() {
       </Section>
       </>)}
 
-
+      {briefingOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-end" onClick={() => setBriefingOpen(false)}>
+
           <div className="w-full max-w-xl mx-auto bg-card border-t border-border rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
