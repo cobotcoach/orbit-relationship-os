@@ -271,13 +271,14 @@ function MissionPage() {
 
 // ---------------- Weekly Commitments ----------------
 function WeeklyCommitmentsPanel({
-  thisWeek, lastWeekDone, lastWeekTotal, sections, onChange,
+  thisWeek, lastWeekDone, lastWeekTotal, sections, onChange, syncSection,
 }: {
   thisWeek: WeeklyCommitment[];
   lastWeekDone: number;
   lastWeekTotal: number;
   sections: BusinessSection[];
   onChange: () => void;
+  syncSection: (slug: string) => Promise<void>;
 }) {
   const [text, setText] = useState("");
   const [section, setSection] = useState(sections[0]?.slug ?? "monetisation");
@@ -301,6 +302,10 @@ function WeeklyCommitmentsPanel({
       completed_at: status === "done" ? new Date().toISOString() : null,
     });
     onChange();
+    // Trigger Drive sync on done/missed
+    if (status === "done" || status === "missed") {
+      syncSection(c.section_slug).catch(err => console.error("Auto-sync after commitment failed", err));
+    }
   }
 
   return (
