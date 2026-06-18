@@ -15,6 +15,8 @@ import { Route as OperationsRouteImport } from './routes/operations'
 import { Route as IntelRouteImport } from './routes/intel'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as ImportRouteImport } from './routes/import'
+import { Route as IdeasRouteImport } from './routes/ideas'
+import { Route as FocusRouteImport } from './routes/focus'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ContactsIndexRouteImport } from './routes/contacts.index'
 import { Route as ContactsNewRouteImport } from './routes/contacts.new'
@@ -50,6 +52,16 @@ const ImportRoute = ImportRouteImport.update({
   path: '/import',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IdeasRoute = IdeasRouteImport.update({
+  id: '/ideas',
+  path: '/ideas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FocusRoute = FocusRouteImport.update({
+  id: '/focus',
+  path: '/focus',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -73,6 +85,8 @@ const ContactsIdRoute = ContactsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/focus': typeof FocusRoute
+  '/ideas': typeof IdeasRoute
   '/import': typeof ImportRoute
   '/inbox': typeof InboxRoute
   '/intel': typeof IntelRoute
@@ -85,6 +99,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/focus': typeof FocusRoute
+  '/ideas': typeof IdeasRoute
   '/import': typeof ImportRoute
   '/inbox': typeof InboxRoute
   '/intel': typeof IntelRoute
@@ -98,6 +114,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/focus': typeof FocusRoute
+  '/ideas': typeof IdeasRoute
   '/import': typeof ImportRoute
   '/inbox': typeof InboxRoute
   '/intel': typeof IntelRoute
@@ -112,6 +130,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/focus'
+    | '/ideas'
     | '/import'
     | '/inbox'
     | '/intel'
@@ -124,6 +144,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/focus'
+    | '/ideas'
     | '/import'
     | '/inbox'
     | '/intel'
@@ -136,6 +158,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/focus'
+    | '/ideas'
     | '/import'
     | '/inbox'
     | '/intel'
@@ -149,6 +173,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  FocusRoute: typeof FocusRoute
+  IdeasRoute: typeof IdeasRoute
   ImportRoute: typeof ImportRoute
   InboxRoute: typeof InboxRoute
   IntelRoute: typeof IntelRoute
@@ -204,6 +230,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ImportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ideas': {
+      id: '/ideas'
+      path: '/ideas'
+      fullPath: '/ideas'
+      preLoaderRoute: typeof IdeasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/focus': {
+      id: '/focus'
+      path: '/focus'
+      fullPath: '/focus'
+      preLoaderRoute: typeof FocusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -237,6 +277,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  FocusRoute: FocusRoute,
+  IdeasRoute: IdeasRoute,
   ImportRoute: ImportRoute,
   InboxRoute: InboxRoute,
   IntelRoute: IntelRoute,
