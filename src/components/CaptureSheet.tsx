@@ -11,11 +11,27 @@ type RecState = "idle" | "recording" | "transcribing";
 
 function pickMimeType(): string | null {
   if (typeof MediaRecorder === "undefined") return null;
-  const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/mpeg"];
+  const candidates = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm"];
   for (const t of candidates) {
     if (MediaRecorder.isTypeSupported(t)) return t;
   }
   return null;
+}
+
+function extensionForMime(mimeType: string) {
+  const mime = mimeType.split(";")[0];
+  if (mime === "audio/mp4") return "mp4";
+  if (mime === "audio/mpeg") return "mp3";
+  if (mime === "audio/wav") return "wav";
+  if (mime === "audio/ogg") return "ogg";
+  return "webm";
+}
+
+function tidyTranscript(value: string) {
+  return value
+    .replace(/\s+/g, " ")
+    .replace(/\b(\w+(?:\s+\w+){0,3})(?:\s+\1\b){2,}/gi, "$1")
+    .trim();
 }
 
 export function CaptureSheet({ onClose, defaultMode }: { onClose: () => void; defaultMode: IdeaMode | null }) {
@@ -67,11 +83,11 @@ export function CaptureSheet({ onClose, defaultMode }: { onClose: () => void; de
     chunksRef.current = [];
     streamRef.current = stream;
 
-    const rec = new MediaRecorder(stream, { mimeType });
+    const rec = new MediaRecorder(stream, { mimeType, audioBitsPerSecond: 128000 });
     recorderRef.current = rec;
     rec.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
     rec.onstop = () => { void uploadAndTranscribe(rec.mimeType); };
-    rec.start(250);
+    rec.start();
 
     setElapsed(0);
     timerRef.current = setInterval(() => setElapsed(s => s + 1), 1000);
@@ -98,7 +114,7 @@ export function CaptureSheet({ onClose, defaultMode }: { onClose: () => void; de
     }
 
     const form = new FormData();
-    form.append("file", blob, "recording");
+    form.append("file", blob, `recording.${extensionForMime(mimeType)}`);
 
     const ctrl = new AbortController();
     abortRef.current = ctrl;
@@ -110,41 +126,11 @@ export function CaptureSheet({ onClose, defaultMode }: { onClose: () => void; de
         throw new Error(detail || `Transcription failed (${res.status})`);
       }
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      let liveText = "";
-
-      const setLive = (extra: string) => {
-        const base = baseTextRef.current;
-        setText(base ? `${base} ${extra}`.trim() : extra);
-      };
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed.startsWith("data:")) continue;
-          const payload = trimmed.slice(5).trim();
-          if (!payload || payload === "[DONE]") continue;
-          try {
-            const evt = JSON.parse(payload);
-            if (evt.type === "transcript.text.delta" && typeof evt.delta === "string") {
-              liveText += evt.delta;
-              setLive(liveText);
-            } else if (evt.type === "transcript.text.done" && typeof evt.text === "string") {
-              liveText = evt.text;
-              setLive(liveText);
-            }
-          } catch { /* skip malformed chunk */ }
-        }
-      }
+      const data = await res.json() as { text?: string };
+      const transcript = tidyTranscript(data.text ?? "");
+      if (!transcript) throw new Error("I couldn't hear anything clear — try again closer to the mic");
+      const base = baseTextRef.current;
+      setText(base ? `${base} ${transcript}`.trim() : transcript);
     } catch (e) {
       if ((e as Error).name !== "AbortError") {
         toast.error((e as Error).message || "Transcription failed");
