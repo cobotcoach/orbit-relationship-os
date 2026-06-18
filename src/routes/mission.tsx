@@ -160,6 +160,14 @@ function MissionPage() {
         </div>
       )}
 
+      <StuckChatPanel
+        sections={sections.data ?? []}
+        ideas={cobotIdeas}
+        intel={intel.data ?? []}
+        actions={actions.data ?? []}
+        topics={topics.data ?? []}
+      />
+
       <WeeklyCommitmentsPanel
         thisWeek={thisWeek.data ?? []}
         lastWeekDone={lastWeekDone}
@@ -168,22 +176,15 @@ function MissionPage() {
         onChange={() => qc.invalidateQueries({ queryKey: ["mc:thisWeek"] })}
       />
 
-      <Section title="Business sections">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          {(sections.data ?? []).map(sec => (
-            <SectionCard
-              key={sec.id}
-              section={sec}
-              decisions={(decisions.data ?? []).filter(d => d.section_slug === sec.slug)}
-              synthRunning={synthRunning === sec.slug}
-              onChange={() => {
-                qc.invalidateQueries({ queryKey: ["mc:sections"] });
-                qc.invalidateQueries({ queryKey: ["mc:decisions"] });
-              }}
-            />
-          ))}
-        </div>
-      </Section>
+      <SectionGroupsPanel
+        sections={sections.data ?? []}
+        decisions={decisions.data ?? []}
+        synthRunningSlug={synthRunning}
+        onChange={() => {
+          qc.invalidateQueries({ queryKey: ["mc:sections"] });
+          qc.invalidateQueries({ queryKey: ["mc:decisions"] });
+        }}
+      />
 
       <DecisionLogPanel decisions={decisions.data ?? []} sections={sections.data ?? []} />
     </Shell>
