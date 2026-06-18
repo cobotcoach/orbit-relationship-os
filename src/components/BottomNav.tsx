@@ -23,8 +23,11 @@ const baseMoreItems = [
 ] as const;
 
 export function BottomNav() {
-  const { openCapture } = useMode();
+  const { openCapture, activeMode } = useMode();
   const [moreOpen, setMoreOpen] = useState(false);
+  const moreItems = activeMode === "cobot_coach"
+    ? [{ to: "/mission" as const, label: "Mission Control", icon: Crosshair }, ...baseMoreItems]
+    : baseMoreItems;
 
   return (
     <>
