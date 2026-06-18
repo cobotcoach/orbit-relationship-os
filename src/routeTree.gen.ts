@@ -19,6 +19,7 @@ import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as ImportRouteImport } from './routes/import'
 import { Route as IdeasRouteImport } from './routes/ideas'
 import { Route as FocusRouteImport } from './routes/focus'
+import { Route as CobotCoachRouteImport } from './routes/cobot-coach'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ContactsIndexRouteImport } from './routes/contacts.index'
 import { Route as ContactsNewRouteImport } from './routes/contacts.new'
@@ -75,6 +76,11 @@ const FocusRoute = FocusRouteImport.update({
   path: '/focus',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CobotCoachRoute = CobotCoachRouteImport.update({
+  id: '/cobot-coach',
+  path: '/cobot-coach',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -103,6 +109,7 @@ const ApiIngestRoute = ApiIngestRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cobot-coach': typeof CobotCoachRoute
   '/focus': typeof FocusRoute
   '/ideas': typeof IdeasRoute
   '/import': typeof ImportRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cobot-coach': typeof CobotCoachRoute
   '/focus': typeof FocusRoute
   '/ideas': typeof IdeasRoute
   '/import': typeof ImportRoute
@@ -138,6 +146,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/cobot-coach': typeof CobotCoachRoute
   '/focus': typeof FocusRoute
   '/ideas': typeof IdeasRoute
   '/import': typeof ImportRoute
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/cobot-coach'
     | '/focus'
     | '/ideas'
     | '/import'
@@ -174,6 +184,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/cobot-coach'
     | '/focus'
     | '/ideas'
     | '/import'
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/cobot-coach'
     | '/focus'
     | '/ideas'
     | '/import'
@@ -209,6 +221,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CobotCoachRoute: typeof CobotCoachRoute
   FocusRoute: typeof FocusRoute
   IdeasRoute: typeof IdeasRoute
   ImportRoute: typeof ImportRoute
@@ -297,6 +310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FocusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cobot-coach': {
+      id: '/cobot-coach'
+      path: '/cobot-coach'
+      fullPath: '/cobot-coach'
+      preLoaderRoute: typeof CobotCoachRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -337,6 +357,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CobotCoachRoute: CobotCoachRoute,
   FocusRoute: FocusRoute,
   IdeasRoute: IdeasRoute,
   ImportRoute: ImportRoute,
