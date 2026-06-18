@@ -9,9 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UploadRouteImport } from './routes/upload'
 import { Route as TopicsRouteImport } from './routes/topics'
 import { Route as PipelineRouteImport } from './routes/pipeline'
 import { Route as OperationsRouteImport } from './routes/operations'
+import { Route as LogRouteImport } from './routes/log'
 import { Route as IntelRouteImport } from './routes/intel'
 import { Route as InboxRouteImport } from './routes/inbox'
 import { Route as ImportRouteImport } from './routes/import'
@@ -23,6 +25,11 @@ import { Route as ContactsNewRouteImport } from './routes/contacts.new'
 import { Route as ContactsIdRouteImport } from './routes/contacts.$id'
 import { Route as ApiIngestRouteImport } from './routes/api/ingest'
 
+const UploadRoute = UploadRouteImport.update({
+  id: '/upload',
+  path: '/upload',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TopicsRoute = TopicsRouteImport.update({
   id: '/topics',
   path: '/topics',
@@ -36,6 +43,11 @@ const PipelineRoute = PipelineRouteImport.update({
 const OperationsRoute = OperationsRouteImport.update({
   id: '/operations',
   path: '/operations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LogRoute = LogRouteImport.update({
+  id: '/log',
+  path: '/log',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IntelRoute = IntelRouteImport.update({
@@ -96,9 +108,11 @@ export interface FileRoutesByFullPath {
   '/import': typeof ImportRoute
   '/inbox': typeof InboxRoute
   '/intel': typeof IntelRoute
+  '/log': typeof LogRoute
   '/operations': typeof OperationsRoute
   '/pipeline': typeof PipelineRoute
   '/topics': typeof TopicsRoute
+  '/upload': typeof UploadRoute
   '/api/ingest': typeof ApiIngestRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
@@ -111,9 +125,11 @@ export interface FileRoutesByTo {
   '/import': typeof ImportRoute
   '/inbox': typeof InboxRoute
   '/intel': typeof IntelRoute
+  '/log': typeof LogRoute
   '/operations': typeof OperationsRoute
   '/pipeline': typeof PipelineRoute
   '/topics': typeof TopicsRoute
+  '/upload': typeof UploadRoute
   '/api/ingest': typeof ApiIngestRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
@@ -127,9 +143,11 @@ export interface FileRoutesById {
   '/import': typeof ImportRoute
   '/inbox': typeof InboxRoute
   '/intel': typeof IntelRoute
+  '/log': typeof LogRoute
   '/operations': typeof OperationsRoute
   '/pipeline': typeof PipelineRoute
   '/topics': typeof TopicsRoute
+  '/upload': typeof UploadRoute
   '/api/ingest': typeof ApiIngestRoute
   '/contacts/$id': typeof ContactsIdRoute
   '/contacts/new': typeof ContactsNewRoute
@@ -144,9 +162,11 @@ export interface FileRouteTypes {
     | '/import'
     | '/inbox'
     | '/intel'
+    | '/log'
     | '/operations'
     | '/pipeline'
     | '/topics'
+    | '/upload'
     | '/api/ingest'
     | '/contacts/$id'
     | '/contacts/new'
@@ -159,9 +179,11 @@ export interface FileRouteTypes {
     | '/import'
     | '/inbox'
     | '/intel'
+    | '/log'
     | '/operations'
     | '/pipeline'
     | '/topics'
+    | '/upload'
     | '/api/ingest'
     | '/contacts/$id'
     | '/contacts/new'
@@ -174,9 +196,11 @@ export interface FileRouteTypes {
     | '/import'
     | '/inbox'
     | '/intel'
+    | '/log'
     | '/operations'
     | '/pipeline'
     | '/topics'
+    | '/upload'
     | '/api/ingest'
     | '/contacts/$id'
     | '/contacts/new'
@@ -190,9 +214,11 @@ export interface RootRouteChildren {
   ImportRoute: typeof ImportRoute
   InboxRoute: typeof InboxRoute
   IntelRoute: typeof IntelRoute
+  LogRoute: typeof LogRoute
   OperationsRoute: typeof OperationsRoute
   PipelineRoute: typeof PipelineRoute
   TopicsRoute: typeof TopicsRoute
+  UploadRoute: typeof UploadRoute
   ApiIngestRoute: typeof ApiIngestRoute
   ContactsIdRoute: typeof ContactsIdRoute
   ContactsNewRoute: typeof ContactsNewRoute
@@ -201,6 +227,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/upload': {
+      id: '/upload'
+      path: '/upload'
+      fullPath: '/upload'
+      preLoaderRoute: typeof UploadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/topics': {
       id: '/topics'
       path: '/topics'
@@ -220,6 +253,13 @@ declare module '@tanstack/react-router' {
       path: '/operations'
       fullPath: '/operations'
       preLoaderRoute: typeof OperationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/log': {
+      id: '/log'
+      path: '/log'
+      fullPath: '/log'
+      preLoaderRoute: typeof LogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/intel': {
@@ -302,9 +342,11 @@ const rootRouteChildren: RootRouteChildren = {
   ImportRoute: ImportRoute,
   InboxRoute: InboxRoute,
   IntelRoute: IntelRoute,
+  LogRoute: LogRoute,
   OperationsRoute: OperationsRoute,
   PipelineRoute: PipelineRoute,
   TopicsRoute: TopicsRoute,
+  UploadRoute: UploadRoute,
   ApiIngestRoute: ApiIngestRoute,
   ContactsIdRoute: ContactsIdRoute,
   ContactsNewRoute: ContactsNewRoute,
