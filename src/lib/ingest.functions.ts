@@ -21,26 +21,35 @@ function safeJSON<T>(s: string, fallback: T): T {
   }
 }
 
+export const ORBIT_CLASSIFIER_SYSTEM = `You are ORBIT, classifying a raw voice-note transcript or meeting note for Richard Mawson (UK Country Manager at Dobot Robotics, and founder of Cobot Coach — a brand-agnostic collaborative robotics consultancy and SI enablement platform targeting UK manufacturing SMEs).
+
+Richard's context:
+- Dobot: his day job managing ~15 SI channel partners across UK & Ireland, EMEA marketing, partner enablement
+- Cobot Coach: his venture, WMH Robotics Ltd. A platform connecting SI integrators with SME manufacturers. Founding Partner model: ~20 slots, £10-15k Year 1, £15k/yr fixed forever. Key deadline: PPMA NEC September 2026. Warm targets: JTR Automation (Jamie Ross), Labman, Astech Projects. Grant sources: Made Smarter, UKSPF, Innovate UK.
+- Key narrative: "race to value" — cobot deployment faster than hiring. UKCA/PUWER compliance as competitive advantage.
+
+Return ONLY a JSON object:
+{
+  "mode": "dobot" | "cobot_coach" | "life" | "wild",
+  "type": "idea" | "intelligence" | "action" | "note",
+  "title": short punchy one-liner max 80 chars,
+  "summary": 2-3 sentence summary preserving key specifics,
+  "energy_score": integer 1-10,
+  "tags": string[] max 6 lowercase — MUST include one of [monetisation, sales, content, build, launch, product] if the content relates to Cobot Coach. Also include specific tags like [grants, founding-partner, ppma, ukca, welding, demo, video, sme] where relevant,
+  "urgency": "low" | "medium" | "high" | "critical"
+}
+
+Mode: dobot = Dobot Robotics UK day job; cobot_coach = Cobot Coach venture; life = personal/family; wild = blue-sky unrelated.
+Type: action = concrete to-do with a clear next step; idea = new concept or strategy worth developing; intelligence = market/competitor/customer signal; note = general observation.
+Energy: 1 = vague rambling, 10 = sharp specific high-conviction insight with clear commercial value.`;
+
 async function classify(transcript: string): Promise<Classification> {
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("AI not configured");
   const gateway = createLovableAiGatewayProvider(key);
-  const system = `You are ORBIT, classifying a raw voice-note transcript for Richard (UK Country Manager, Dobot Robotics — cobots, channel partners).
-Return ONLY a JSON object with these fields:
-{
-  "mode": "dobot" | "cobot_coach" | "life" | "wild",
-  "type": "idea" | "intelligence" | "action" | "note",
-  "title": short one-liner (max 80 chars),
-  "summary": 2-3 sentence summary,
-  "energy_score": integer 1-10 (signal/conviction in the language),
-  "tags": string[] (max 6, lowercase),
-  "urgency": "low" | "medium" | "high" | "critical"
-}
-Mode guide: dobot = Dobot Robotics UK business; cobot_coach = the Cobot Coach education brand; life = personal/family/health; wild = anything else / wild ideas.
-Type guide: action = a concrete to-do; idea = a new concept worth capturing; intelligence = market/competitor/customer signal; note = passive observation.`;
   const { text } = await generateText({
     model: gateway(AI_MODEL),
-    system,
+    system: ORBIT_CLASSIFIER_SYSTEM,
     prompt: `${transcript}\n\nRespond with ONLY a valid JSON object, no prose, no code fences.`,
     maxOutputTokens: 1024,
   });
@@ -174,3 +183,38 @@ export const ingestFromBrowser = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data }) => ingestTranscript(data));
+
+export const reclassifyIdea = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => {
+    const d = (data ?? {}) as Record<string, unknown>;
+    return { id: String(d.id ?? "") };
+  })
+  .handler(async ({ data }) => {
+    if (!data.id) return { ok: false, error: "Missing id" };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: idea, error: fetchErr } = await supabaseAdmin
+      .from("ideas")
+      .select("id, raw_text")
+      .eq("id", data.id)
+      .single();
+    if (fetchErr || !idea) return { ok: false, error: fetchErr?.message ?? "Idea not found" };
+    const transcript = (idea as { raw_text: string | null }).raw_text?.trim();
+    if (!transcript) return { ok: false, error: "Idea has no raw_text to re-classify" };
+    try {
+      const c = await classify(transcript);
+      const { error: updErr } = await supabaseAdmin
+        .from("ideas")
+        .update({
+          title: c.title,
+          summary: c.summary,
+          mode: c.mode,
+          energy_score: c.energy_score,
+          tags: c.tags,
+        } as never)
+        .eq("id", data.id);
+      if (updErr) throw new Error(updErr.message);
+      return { ok: true, mode: c.mode, tags: c.tags, title: c.title };
+    } catch (e) {
+      return { ok: false, error: e instanceof Error ? e.message : String(e) };
+    }
+  });
