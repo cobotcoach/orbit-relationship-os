@@ -219,3 +219,40 @@ export interface CaptureLogEntry {
   error_text: string | null;
   created_at: string;
 }
+
+export interface BusinessSection {
+  id: string;
+  slug: string;
+  title: string;
+  emoji: string;
+  status: "active" | "parked" | "blocked" | string;
+  owner_summary: string | null;
+  ai_synthesis: string | null;
+  ai_synthesised_at: string | null;
+  blockers: string[] | null;
+  next_action: string | null;
+  confidence_score: number | null;
+  last_updated: string;
+}
+
+export interface WeeklyCommitment {
+  id: string;
+  week_starting: string;
+  section_slug: string;
+  commitment: string;
+  status: "pending" | "done" | "missed" | "carried" | string;
+  notes: string | null;
+  created_at: string;
+  completed_at: string | null;
+}
+
+export interface Decision {
+  id: string;
+  title: string;
+  section_slug: string;
+  decision: string;
+  reasoning: string | null;
+  alternatives: string | null;
+  made_at: string;
+  review_at: string | null;
+}

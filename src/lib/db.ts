@@ -1,5 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Contact, Activity, Action, Quote, AppEvent, LoanEquipment, SupportTicket, IntelligenceItem, SmartTopic, Idea, FocusItem, CaptureLogEntry } from "./types";
+import type { Contact, Activity, Action, Quote, AppEvent, LoanEquipment, SupportTicket, IntelligenceItem, SmartTopic, Idea, FocusItem, CaptureLogEntry, BusinessSection, WeeklyCommitment, Decision } from "./types";
+
+function mondayISO(d = new Date()) {
+  const date = new Date(d);
+  const day = date.getUTCDay();
+  const diff = (day === 0 ? -6 : 1 - day);
+  date.setUTCDate(date.getUTCDate() + diff);
+  return date.toISOString().slice(0, 10);
+}
 
 export const db = {
   contacts: {
@@ -187,5 +195,54 @@ export const db = {
       if (error) throw error;
     },
   },
+  sections: {
+    list: async (): Promise<BusinessSection[]> => {
+      const { data, error } = await supabase.from("business_sections").select("*").order("slug");
+      if (error) throw error; return (data ?? []) as BusinessSection[];
+    },
+    get: async (slug: string): Promise<BusinessSection | null> => {
+      const { data, error } = await supabase.from("business_sections").select("*").eq("slug", slug).maybeSingle();
+      if (error) throw error; return data as BusinessSection | null;
+    },
+    update: async (slug: string, patch: Partial<BusinessSection>): Promise<void> => {
+      const { error } = await supabase.from("business_sections").update({ ...patch, last_updated: new Date().toISOString() } as never).eq("slug", slug);
+      if (error) throw error;
+    },
+  },
+  commitments: {
+    thisWeek: async (): Promise<WeeklyCommitment[]> => {
+      const { data, error } = await supabase.from("weekly_commitments").select("*").eq("week_starting", mondayISO()).order("created_at");
+      if (error) throw error; return (data ?? []) as WeeklyCommitment[];
+    },
+    lastWeek: async (): Promise<WeeklyCommitment[]> => {
+      const d = new Date(); d.setUTCDate(d.getUTCDate() - 7);
+      const { data, error } = await supabase.from("weekly_commitments").select("*").eq("week_starting", mondayISO(d)).order("created_at");
+      if (error) throw error; return (data ?? []) as WeeklyCommitment[];
+    },
+    insert: async (c: Partial<WeeklyCommitment>): Promise<WeeklyCommitment> => {
+      const payload = { week_starting: mondayISO(), ...c } as never;
+      const { data, error } = await supabase.from("weekly_commitments").insert(payload).select().single();
+      if (error) throw error; return data as WeeklyCommitment;
+    },
+    update: async (id: string, patch: Partial<WeeklyCommitment>): Promise<void> => {
+      const { error } = await supabase.from("weekly_commitments").update(patch as never).eq("id", id);
+      if (error) throw error;
+    },
+  },
+  decisions: {
+    list: async (sectionSlug?: string): Promise<Decision[]> => {
+      let q = supabase.from("decisions").select("*").order("made_at", { ascending: false });
+      if (sectionSlug) q = q.eq("section_slug", sectionSlug);
+      const { data, error } = await q;
+      if (error) throw error; return (data ?? []) as Decision[];
+    },
+    insert: async (d: Partial<Decision>): Promise<Decision> => {
+      const { data, error } = await supabase.from("decisions").insert(d as never).select().single();
+      if (error) throw error; return data as Decision;
+    },
+  },
 };
+
+export { mondayISO };
+
 

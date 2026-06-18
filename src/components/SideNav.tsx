@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Home, Users, TrendingUp, MessagesSquare, Wrench, Inbox, Radio, Lightbulb, Target, Upload, ClipboardList, Rocket } from "lucide-react";
+import { Home, Users, TrendingUp, MessagesSquare, Wrench, Inbox, Radio, Lightbulb, Target, Upload, ClipboardList, Rocket, Crosshair } from "lucide-react";
+import { useMode } from "@/lib/mode-context";
 
-const items = [
+const baseItems = [
   { to: "/", label: "Home", icon: Home },
   { to: "/focus", label: "Focus", icon: Target },
   { to: "/cobot-coach", label: "Cobot Coach", icon: Rocket },
@@ -17,6 +18,10 @@ const items = [
 ] as const;
 
 export function SideNav() {
+  const { activeMode } = useMode();
+  const items = activeMode === "cobot_coach"
+    ? [{ to: "/mission" as const, label: "Mission Control", icon: Crosshair }, ...baseItems]
+    : baseItems;
   return (
     <aside className="hidden md:flex fixed left-0 top-0 bottom-0 z-40 flex-col glass border-r border-border w-16 xl:w-56 py-4">
       <div className="px-3 xl:px-4 mb-4">

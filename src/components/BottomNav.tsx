@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Home, Target, Lightbulb, Plus, MoreHorizontal, Users, TrendingUp, MessagesSquare, Wrench, Inbox, Radio, Upload, ClipboardList, Rocket, X } from "lucide-react";
+import { Home, Target, Lightbulb, Plus, MoreHorizontal, Users, TrendingUp, MessagesSquare, Wrench, Inbox, Radio, Upload, ClipboardList, Rocket, X, Crosshair } from "lucide-react";
 import { useMode } from "@/lib/mode-context";
 
 const primary = [
@@ -9,7 +9,7 @@ const primary = [
   { to: "/ideas", label: "Ideas", icon: Lightbulb, exact: false },
 ] as const;
 
-const moreItems = [
+const baseMoreItems = [
   { to: "/cobot-coach", label: "Cobot Coach", icon: Rocket },
   { to: "/contacts", label: "Contacts", icon: Users },
   { to: "/pipeline", label: "Pipeline", icon: TrendingUp },
@@ -23,8 +23,11 @@ const moreItems = [
 ] as const;
 
 export function BottomNav() {
-  const { openCapture } = useMode();
+  const { openCapture, activeMode } = useMode();
   const [moreOpen, setMoreOpen] = useState(false);
+  const moreItems = activeMode === "cobot_coach"
+    ? [{ to: "/mission" as const, label: "Mission Control", icon: Crosshair }, ...baseMoreItems]
+    : baseMoreItems;
 
   return (
     <>
