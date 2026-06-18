@@ -100,7 +100,7 @@ function TopicCard({ topic, contact, onUpdate }: { topic: SmartTopic; contact?: 
   );
 }
 
-function NewTopicSheet({ onClose, contacts }: { onClose: () => void; contacts: Contact[] }) {
+function NewTopicSheet({ onClose, contacts, defaultMode }: { onClose: () => void; contacts: Contact[]; defaultMode: string }) {
   const qc = useQueryClient();
   const [title, setTitle] = useState("");
   const [contactId, setContactId] = useState("");
@@ -114,10 +114,12 @@ function NewTopicSheet({ onClose, contacts }: { onClose: () => void; contacts: C
       status,
       next_action: nextAction.trim() || null,
       source: "manual",
+      mode: defaultMode,
     }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["topics"] }); toast.success("Topic added"); onClose(); },
     onError: (e: Error) => toast.error(e.message),
   });
+
 
   return (
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur flex items-end sm:items-center justify-center" onClick={onClose}>
