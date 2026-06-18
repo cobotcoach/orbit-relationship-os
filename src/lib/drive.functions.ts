@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
 
 const DRIVE_GATEWAY = "https://connector-gateway.lovable.dev/google_drive/drive/v3";
 const DOCS_GATEWAY = "https://connector-gateway.lovable.dev/google_docs/v1";
