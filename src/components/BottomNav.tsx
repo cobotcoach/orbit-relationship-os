@@ -31,30 +31,29 @@ export function BottomNav() {
 
   return (
     <>
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass border-t border-border tap">
-        <div className="mx-auto max-w-xl grid grid-cols-5 items-end px-2 pb-[max(0.25rem,env(safe-area-inset-bottom))] pt-1">
-          {/* Home */}
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 glass border-t border-border tap"
+        style={{ height: "calc(64px + env(safe-area-inset-bottom))" }}
+      >
+        <div className="mx-auto max-w-xl grid grid-cols-5 items-end px-2 pb-[max(0.25rem,env(safe-area-inset-bottom))] pt-1 h-full">
           <NavItem item={primary[0]} />
-          {/* Focus */}
           <NavItem item={primary[1]} />
-          {/* Capture (centre, elevated) */}
           <div className="flex justify-center">
             <button
               onClick={openCapture}
               aria-label="Capture idea"
-              className="-mt-6 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center active:scale-95 transition-transform border-4 border-background"
+              className="-mt-8 h-[60px] w-[60px] rounded-full bg-primary text-primary-foreground flex items-center justify-center active:scale-95 transition-transform border-4 border-background"
+              style={{ boxShadow: "0 8px 24px oklch(0.84 0.20 165 / 0.45)" }}
             >
-              <Plus className="h-6 w-6" strokeWidth={2.5} />
+              <Plus className="h-7 w-7" strokeWidth={2.5} />
             </button>
           </div>
-          {/* Ideas */}
           <NavItem item={primary[2]} />
-          {/* More */}
           <button
             onClick={() => setMoreOpen(true)}
-            className="flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium text-muted-foreground"
+            className="flex flex-col items-center gap-1 py-2 text-[11px] font-medium text-muted-foreground"
           >
-            <MoreHorizontal className="h-5 w-5" strokeWidth={2} />
+            <MoreHorizontal className="h-6 w-6" strokeWidth={2} />
             <span>More</span>
           </button>
         </div>
@@ -62,27 +61,30 @@ export function BottomNav() {
 
       {moreOpen && (
         <div
-          className="md:hidden fixed inset-0 z-[55] bg-background/70 backdrop-blur-sm flex items-end"
+          className="md:hidden fixed inset-0 z-[55] bg-background/70 backdrop-blur-sm flex items-end animate-in fade-in duration-150"
           onClick={() => setMoreOpen(false)}
         >
           <div
-            className="w-full bg-card border-t border-border rounded-t-2xl p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+            className="w-full bg-surface-1 border-t border-border rounded-t-3xl pb-[max(1rem,env(safe-area-inset-bottom))]"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-2 pb-2">
-              <h2 className="text-sm font-semibold">More</h2>
-              <button onClick={() => setMoreOpen(false)} className="text-muted-foreground"><X className="h-5 w-5" /></button>
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="h-1.5 w-12 rounded-full bg-border" />
             </div>
-            <div className="grid grid-cols-1 divide-y divide-border">
+            <div className="flex items-center justify-between px-5 pb-3">
+              <h2 className="text-base font-bold">More</h2>
+              <button onClick={() => setMoreOpen(false)} className="text-muted-foreground p-1"><X className="h-5 w-5" /></button>
+            </div>
+            <div className="flex flex-col divide-y divide-border/50 px-2">
               {moreItems.map(({ to, label, icon: Icon }) => (
                 <Link
                   key={to}
                   to={to}
                   onClick={() => setMoreOpen(false)}
-                  className="flex items-center gap-3 px-2 py-3 text-sm font-medium text-foreground active:bg-muted/60"
+                  className="flex items-center gap-4 px-3 py-4 text-base font-medium text-foreground active:bg-surface-2 rounded-lg"
                   activeProps={{ className: "text-primary" }}
                 >
-                  <Icon className="h-5 w-5 text-muted-foreground" strokeWidth={2} />
+                  <Icon className="h-6 w-6 text-muted-foreground" strokeWidth={2} />
                   <span>{label}</span>
                 </Link>
               ))}
@@ -99,11 +101,12 @@ function NavItem({ item }: { item: { to: string; label: string; icon: typeof Hom
   return (
     <Link
       to={to}
-      className="flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium text-muted-foreground transition-colors"
+      className="relative flex flex-col items-center gap-1 py-2 text-[11px] font-medium text-muted-foreground transition-colors"
       activeOptions={{ exact }}
-      activeProps={{ className: "text-primary" }}
+      activeProps={{ className: "!text-primary [&_.active-dot]:opacity-100" }}
     >
-      <Icon className="h-5 w-5" strokeWidth={2} />
+      <span className="active-dot absolute top-0.5 h-1 w-1 rounded-full bg-primary opacity-0 transition-opacity" />
+      <Icon className="h-6 w-6" strokeWidth={2} />
       <span>{label}</span>
     </Link>
   );
