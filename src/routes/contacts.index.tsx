@@ -71,12 +71,21 @@ function ContactsPage() {
   return (
     <Shell
       title="Contacts"
+      subtitle={activeMode ? `${modeEmoji} ${modeLabel}` : undefined}
       action={
         <Link to="/contacts/new" className="h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center tap active:scale-95">
           <Plus className="h-5 w-5" />
         </Link>
       }
     >
+      {lifeOrWild ? (
+        <EmptyState
+          icon={<Sprout className="h-7 w-7" />}
+          title={`No contacts in ${modeLabel}`}
+          hint="This mode is for personal organisation — switch to Dobot or Cobot Coach to see contacts."
+        />
+      ) : (<>
+
       {/* Type tabs */}
       <div className="-mx-4 px-4 overflow-x-auto no-scrollbar">
         <div className="flex gap-2 pb-2">
