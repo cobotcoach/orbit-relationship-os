@@ -18,6 +18,10 @@ const baseItems = [
 ] as const;
 
 export function SideNav() {
+  const { activeMode } = useMode();
+  const items = activeMode === "cobot_coach"
+    ? [{ to: "/mission" as const, label: "Mission Control", icon: Crosshair }, ...baseItems]
+    : baseItems;
   return (
     <aside className="hidden md:flex fixed left-0 top-0 bottom-0 z-40 flex-col glass border-r border-border w-16 xl:w-56 py-4">
       <div className="px-3 xl:px-4 mb-4">
