@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Contact, Activity, Action, Quote, AppEvent, LoanEquipment, SupportTicket, IntelligenceItem, SmartTopic } from "./types";
+import type { Contact, Activity, Action, Quote, AppEvent, LoanEquipment, SupportTicket, IntelligenceItem, SmartTopic, Idea, FocusItem } from "./types";
 
 export const db = {
   contacts: {
@@ -132,4 +132,46 @@ export const db = {
       if (error) throw error;
     },
   },
+  ideas: {
+    list: async (): Promise<Idea[]> => {
+      const { data, error } = await supabase.from("ideas").select("*").order("created_at", { ascending: false });
+      if (error) throw error; return (data ?? []) as Idea[];
+    },
+    insert: async (i: Partial<Idea>): Promise<Idea> => {
+      const { data, error } = await supabase.from("ideas").insert(i as never).select().single();
+      if (error) throw error; return data as Idea;
+    },
+    update: async (id: string, patch: Partial<Idea>): Promise<void> => {
+      const { error } = await supabase.from("ideas").update(patch as never).eq("id", id);
+      if (error) throw error;
+    },
+    remove: async (id: string): Promise<void> => {
+      const { error } = await supabase.from("ideas").delete().eq("id", id);
+      if (error) throw error;
+    },
+  },
+  focus: {
+    list: async (): Promise<FocusItem[]> => {
+      const { data, error } = await supabase.from("focus_items").select("*").order("date", { ascending: false }).order("priority", { ascending: true });
+      if (error) throw error; return (data ?? []) as FocusItem[];
+    },
+    today: async (): Promise<FocusItem[]> => {
+      const today = new Date().toISOString().slice(0, 10);
+      const { data, error } = await supabase.from("focus_items").select("*").eq("date", today).order("priority", { ascending: true });
+      if (error) throw error; return (data ?? []) as FocusItem[];
+    },
+    insert: async (f: Partial<FocusItem>): Promise<FocusItem> => {
+      const { data, error } = await supabase.from("focus_items").insert(f as never).select().single();
+      if (error) throw error; return data as FocusItem;
+    },
+    update: async (id: string, patch: Partial<FocusItem>): Promise<void> => {
+      const { error } = await supabase.from("focus_items").update(patch as never).eq("id", id);
+      if (error) throw error;
+    },
+    clearForDate: async (date: string): Promise<void> => {
+      const { error } = await supabase.from("focus_items").delete().eq("date", date);
+      if (error) throw error;
+    },
+  },
 };
+

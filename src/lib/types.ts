@@ -114,6 +114,45 @@ export interface IntelligenceItem {
   created_at: string;
 }
 
+export type IdeaCategory = "cobot_coach" | "dobot" | "personal" | "product" | "content" | "other";
+export type IdeaStatus = "new" | "reviewing" | "active" | "parked" | "done";
+
+export interface Idea {
+  id: string;
+  raw_text: string;
+  title: string | null;
+  summary: string | null;
+  category: IdeaCategory | string;
+  energy_score: number;
+  status: IdeaStatus | string;
+  tags: string[];
+  source: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FocusItem {
+  id: string;
+  title: string;
+  why: string | null;
+  linked_idea_id: string | null;
+  linked_contact_id: string | null;
+  priority: number;
+  date: string;
+  status: "pending" | "done" | "deferred" | string;
+  created_at: string;
+  updated_at: string;
+}
+
+export const IDEA_CATEGORIES: { value: IdeaCategory; label: string }[] = [
+  { value: "cobot_coach", label: "Cobot Coach" },
+  { value: "dobot", label: "Dobot" },
+  { value: "product", label: "Product" },
+  { value: "content", label: "Content" },
+  { value: "personal", label: "Personal" },
+  { value: "other", label: "Other" },
+];
+
 export type TopicStatus = "waiting_on_them" | "waiting_on_you" | "active" | "stalled" | "resolved";
 
 export interface SmartTopic {

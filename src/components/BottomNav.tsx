@@ -1,11 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import { Home, Users, TrendingUp, MessagesSquare, Wrench, Inbox, Radio } from "lucide-react";
+import { Home, Users, TrendingUp, MessagesSquare, Wrench, Inbox, Radio, Lightbulb, Target } from "lucide-react";
 
 const items = [
   { to: "/", label: "Home", icon: Home },
+  { to: "/focus", label: "Focus", icon: Target },
   { to: "/contacts", label: "Contacts", icon: Users },
   { to: "/pipeline", label: "Pipeline", icon: TrendingUp },
   { to: "/topics", label: "Topics", icon: MessagesSquare },
+  { to: "/ideas", label: "Ideas", icon: Lightbulb },
   { to: "/operations", label: "Ops", icon: Wrench },
   { to: "/inbox", label: "Inbox", icon: Inbox },
   { to: "/intel", label: "Intel", icon: Radio },
@@ -14,7 +16,7 @@ const items = [
 export function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 glass border-t border-border tap">
-      <div className="mx-auto max-w-xl grid grid-cols-7 px-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] pt-1">
+      <div className="mx-auto max-w-2xl grid grid-cols-9 px-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] pt-1">
         {items.map(({ to, label, icon: Icon }) => (
           <Link
             key={to}
