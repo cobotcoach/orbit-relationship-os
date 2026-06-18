@@ -1,19 +1,33 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, RefreshCw, Plus, Check, X, ChevronDown, ChevronRight, Search, AlertTriangle } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Loader2, RefreshCw, Plus, Check, X, ChevronDown, ChevronRight, Search, AlertTriangle, Cloud, CloudOff, ExternalLink, ArrowDown } from "lucide-react";
 import { db, mondayISO } from "@/lib/db";
 import { Shell } from "@/components/Shell";
 import { Pill, Section, EmptyState } from "@/components/ui-bits";
 import { useMode } from "@/lib/mode-context";
 import { synthesiseMissionControlSection, missionControlAsk } from "@/lib/ai.functions";
+import { syncSectionToDrive, pullFromDrive } from "@/lib/drive.functions";
 import type { BusinessSection, WeeklyCommitment, Decision, Idea, IntelligenceItem, Action, SmartTopic } from "@/lib/types";
 
 export const Route = createFileRoute("/mission")({
   head: () => ({ meta: [{ title: "ORBIT — Mission Control" }] }),
   component: MissionPage,
 });
+
+function timeAgo(iso: string | null): string {
+  if (!iso) return "never";
+  const diff = Date.now() - new Date(iso).getTime();
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ago`;
+}
 
 const LAUNCH_DATE = new Date("2026-07-31T00:00:00Z");
 function daysTo(d: Date) {
@@ -48,9 +62,53 @@ function MissionPage() {
   const topics = useQuery({ queryKey: ["topics"], queryFn: db.topics.list });
 
   const synthesise = useServerFn(synthesiseMissionControlSection);
+  const syncFn = useServerFn(syncSectionToDrive);
+  const pullFn = useServerFn(pullFromDrive);
   const [synthRunning, setSynthRunning] = useState<string | null>(null);
   const [synthProgress, setSynthProgress] = useState<{ current: number; total: number } | null>(null);
+  const [syncingSlug, setSyncingSlug] = useState<string | null>(null);
+  const [syncProgress, setSyncProgress] = useState<{ current: number; total: number; label: string } | null>(null);
   const autoRanRef = useRef(false);
+
+  const syncSection = useCallback(async (slug: string): Promise<void> => {
+    setSyncingSlug(slug);
+    try {
+      await syncFn({ data: { slug } });
+      qc.invalidateQueries({ queryKey: ["mc:sections"] });
+    } catch (e) {
+      console.error("Drive sync failed for", slug, e);
+    } finally {
+      setSyncingSlug(prev => (prev === slug ? null : prev));
+    }
+  }, [syncFn, qc]);
+
+  const pullSection = useCallback(async (slug: string): Promise<void> => {
+    setSyncingSlug(slug);
+    try {
+      await pullFn({ data: { slug } });
+      qc.invalidateQueries({ queryKey: ["mc:sections"] });
+    } catch (e) {
+      console.error("Drive pull failed for", slug, e);
+    } finally {
+      setSyncingSlug(prev => (prev === slug ? null : prev));
+    }
+  }, [pullFn, qc]);
+
+  async function syncAll(list: BusinessSection[]) {
+    for (let i = 0; i < list.length; i++) {
+      const s = list[i];
+      setSyncProgress({ current: i + 1, total: list.length, label: s.title });
+      setSyncingSlug(s.slug);
+      try {
+        await syncFn({ data: { slug: s.slug } });
+      } catch (e) {
+        console.error("Sync failed", s.slug, e);
+      }
+    }
+    setSyncingSlug(null);
+    setSyncProgress(null);
+    qc.invalidateQueries({ queryKey: ["mc:sections"] });
+  }
 
   const days = daysTo(LAUNCH_DATE);
   const countdownColor = days < 30 ? "text-red-500" : days < 60 ? "text-amber-500" : "text-muted-foreground";
@@ -97,6 +155,8 @@ function MissionPage() {
           ai_synthesis: res.synthesis,
           ai_synthesised_at: new Date().toISOString(),
         });
+        // Trigger Drive sync after synthesis completes for this section
+        syncSection(sec.slug).catch(err => console.error("Auto-sync after synthesis failed", err));
       } catch (e) {
         console.error("Synth failed for", sec.slug, e);
       }
@@ -138,7 +198,7 @@ function MissionPage() {
       title="Mission Control"
       subtitle={`Cobot Coach · ${weekLabel()}`}
       action={
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
           <div className={`text-xs font-semibold ${countdownColor}`}>
             {days}d to Jul 31
           </div>
@@ -150,6 +210,14 @@ function MissionPage() {
             {synthRunning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
             Synthesise
           </button>
+          <button
+            onClick={() => syncAll(sections.data ?? [])}
+            disabled={syncProgress !== null}
+            className="h-9 px-3 rounded-full bg-secondary text-secondary-foreground text-xs font-medium inline-flex items-center gap-1.5 tap active:scale-95 disabled:opacity-50"
+          >
+            {syncProgress ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Cloud className="h-3.5 w-3.5" />}
+            Sync All to Drive
+          </button>
         </div>
       }
     >
@@ -157,6 +225,12 @@ function MissionPage() {
         <div className="mb-3 rounded-xl bg-primary/10 border border-primary/30 px-3 py-2 text-xs text-primary inline-flex items-center gap-2">
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
           Synthesising {synthRunning} ({synthProgress.current}/{synthProgress.total})
+        </div>
+      )}
+      {syncProgress && (
+        <div className="mb-3 ml-2 rounded-xl bg-secondary border border-border px-3 py-2 text-xs inline-flex items-center gap-2">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          Syncing {syncProgress.label}… ({syncProgress.current}/{syncProgress.total})
         </div>
       )}
 
@@ -174,12 +248,16 @@ function MissionPage() {
         lastWeekTotal={lastWeekTotal}
         sections={sections.data ?? []}
         onChange={() => qc.invalidateQueries({ queryKey: ["mc:thisWeek"] })}
+        syncSection={syncSection}
       />
 
       <SectionGroupsPanel
         sections={sections.data ?? []}
         decisions={decisions.data ?? []}
         synthRunningSlug={synthRunning}
+        syncingSlug={syncingSlug}
+        syncSection={syncSection}
+        pullSection={pullSection}
         onChange={() => {
           qc.invalidateQueries({ queryKey: ["mc:sections"] });
           qc.invalidateQueries({ queryKey: ["mc:decisions"] });
@@ -193,13 +271,14 @@ function MissionPage() {
 
 // ---------------- Weekly Commitments ----------------
 function WeeklyCommitmentsPanel({
-  thisWeek, lastWeekDone, lastWeekTotal, sections, onChange,
+  thisWeek, lastWeekDone, lastWeekTotal, sections, onChange, syncSection,
 }: {
   thisWeek: WeeklyCommitment[];
   lastWeekDone: number;
   lastWeekTotal: number;
   sections: BusinessSection[];
   onChange: () => void;
+  syncSection: (slug: string) => Promise<void>;
 }) {
   const [text, setText] = useState("");
   const [section, setSection] = useState(sections[0]?.slug ?? "monetisation");
@@ -223,6 +302,10 @@ function WeeklyCommitmentsPanel({
       completed_at: status === "done" ? new Date().toISOString() : null,
     });
     onChange();
+    // Trigger Drive sync on done/missed
+    if (status === "done" || status === "missed") {
+      syncSection(c.section_slug).catch(err => console.error("Auto-sync after commitment failed", err));
+    }
   }
 
   return (
@@ -273,17 +356,30 @@ function WeeklyCommitmentsPanel({
 
 // ---------------- Section Card ----------------
 function SectionCard({
-  section, decisions, synthRunning, onChange,
+  section, decisions, synthRunning, syncing, onChange, syncSection, pullSection,
 }: {
   section: BusinessSection;
   decisions: Decision[];
   synthRunning: boolean;
+  syncing: boolean;
   onChange: () => void;
+  syncSection: (slug: string) => Promise<void>;
+  pullSection: (slug: string) => Promise<void>;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [showUpdate, setShowUpdate] = useState(false);
   const [showDecisions, setShowDecisions] = useState(false);
   const conf = section.confidence_score ?? 5;
+
+  const synced = section.drive_synced_at;
+  const hoursOld = synced ? (Date.now() - new Date(synced).getTime()) / 3_600_000 : null;
+  const driveTone =
+    syncing ? "text-primary"
+    : !synced ? "text-muted-foreground"
+    : (hoursOld ?? 0) <= 1 ? "text-emerald-500"
+    : (hoursOld ?? 0) <= 24 ? "text-emerald-500"
+    : "text-amber-500";
+  const DriveIcon = !synced && !syncing ? CloudOff : Cloud;
 
   return (
     <div className="rounded-xl bg-card border border-border p-3 flex flex-col gap-2">
@@ -333,8 +429,63 @@ function SectionCard({
         </button>
       </div>
 
-      {showUpdate && <UpdateDrawer section={section} onClose={() => setShowUpdate(false)} onSaved={() => { onChange(); setShowUpdate(false); }} />}
-      {showDecisions && <DecisionsDrawer section={section} decisions={decisions} onClose={() => setShowDecisions(false)} onSaved={onChange} />}
+      {/* Drive status row */}
+      <div className="mt-1 pt-2 border-t border-border flex items-center gap-2 text-[11px]">
+        <button
+          onClick={() => syncSection(section.slug)}
+          disabled={syncing}
+          title={synced ? "Sync to Drive" : "Create Drive doc"}
+          className={`inline-flex items-center gap-1 ${driveTone} disabled:opacity-50`}
+        >
+          {syncing
+            ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            : <DriveIcon className="h-3.5 w-3.5" />}
+          <span>{syncing ? "Syncing…" : synced ? `Synced ${timeAgo(synced)}` : "Never synced"}</span>
+        </button>
+        {section.drive_doc_url && (
+          <a
+            href={section.drive_doc_url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
+          >
+            Open in Drive <ExternalLink className="h-3 w-3" />
+          </a>
+        )}
+        {section.drive_doc_id && (
+          <button
+            onClick={() => pullSection(section.slug)}
+            disabled={syncing}
+            title="Pull Drive doc into ORBIT"
+            className="ml-auto inline-flex items-center gap-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
+          >
+            Pull <ArrowDown className="h-3 w-3" />
+          </button>
+        )}
+      </div>
+
+      {showUpdate && (
+        <UpdateDrawer
+          section={section}
+          onClose={() => setShowUpdate(false)}
+          onSaved={() => {
+            onChange();
+            setShowUpdate(false);
+            syncSection(section.slug).catch(err => console.error("Auto-sync after update failed", err));
+          }}
+        />
+      )}
+      {showDecisions && (
+        <DecisionsDrawer
+          section={section}
+          decisions={decisions}
+          onClose={() => setShowDecisions(false)}
+          onSaved={() => {
+            onChange();
+            syncSection(section.slug).catch(err => console.error("Auto-sync after decision failed", err));
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -554,11 +705,14 @@ function groupHealth(items: BusinessSection[]): { tone: "green" | "amber" | "red
 }
 
 function SectionGroupsPanel({
-  sections, decisions, synthRunningSlug, onChange,
+  sections, decisions, synthRunningSlug, syncingSlug, syncSection, pullSection, onChange,
 }: {
   sections: BusinessSection[];
   decisions: Decision[];
   synthRunningSlug: string | null;
+  syncingSlug: string | null;
+  syncSection: (slug: string) => Promise<void>;
+  pullSection: (slug: string) => Promise<void>;
   onChange: () => void;
 }) {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() =>
@@ -604,6 +758,9 @@ function SectionGroupsPanel({
                       section={sec}
                       decisions={decisions.filter(d => d.section_slug === sec.slug)}
                       synthRunning={synthRunningSlug === sec.slug}
+                      syncing={syncingSlug === sec.slug}
+                      syncSection={syncSection}
+                      pullSection={pullSection}
                       onChange={onChange}
                     />
                   ))}

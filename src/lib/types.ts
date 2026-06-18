@@ -233,6 +233,10 @@ export interface BusinessSection {
   next_action: string | null;
   confidence_score: number | null;
   last_updated: string;
+  drive_doc_id: string | null;
+  drive_doc_url: string | null;
+  drive_synced_at: string | null;
+  drive_doc_content: string | null;
 }
 
 export interface WeeklyCommitment {
