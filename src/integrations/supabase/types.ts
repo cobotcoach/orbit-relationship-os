@@ -99,6 +99,48 @@ export type Database = {
           },
         ]
       }
+      captures_log: {
+        Row: {
+          char_count: number | null
+          created_at: string
+          error_text: string | null
+          id: string
+          mode: string | null
+          original_filename: string | null
+          raw_text: string
+          routed_id: string | null
+          routed_to: string | null
+          source: string
+          status: string
+        }
+        Insert: {
+          char_count?: number | null
+          created_at?: string
+          error_text?: string | null
+          id?: string
+          mode?: string | null
+          original_filename?: string | null
+          raw_text: string
+          routed_id?: string | null
+          routed_to?: string | null
+          source: string
+          status?: string
+        }
+        Update: {
+          char_count?: number | null
+          created_at?: string
+          error_text?: string | null
+          id?: string
+          mode?: string | null
+          original_filename?: string | null
+          raw_text?: string
+          routed_id?: string | null
+          routed_to?: string | null
+          source?: string
+          status?: string
+        }
+        Relationships: []
+      }
       contacts: {
         Row: {
           company: string | null
