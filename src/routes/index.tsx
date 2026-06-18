@@ -4,8 +4,10 @@ import { db } from "@/lib/db";
 import { Shell } from "@/components/Shell";
 import { ContactCard } from "@/components/ContactCard";
 import { Section, Pill, EmptyState } from "@/components/ui-bits";
-import { AlertTriangle, Package, TrendingUp, Radio, Plus, Upload } from "lucide-react";
+import { AlertTriangle, Package, TrendingUp, Radio, Plus, Upload, Lightbulb, Target, Sparkles, Sprout, Wand2 } from "lucide-react";
 import { gbp, daysSince } from "@/lib/format";
+import { useMode } from "@/lib/mode-context";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "ORBIT — Home" }] }),
@@ -13,10 +15,14 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  const { activeMode, modeLabel, modeEmoji } = useMode();
   const contacts = useQuery({ queryKey: ["contacts"], queryFn: db.contacts.list });
   const loans = useQuery({ queryKey: ["loans"], queryFn: db.loans.list });
   const quotes = useQuery({ queryKey: ["quotes"], queryFn: db.quotes.list });
   const intel = useQuery({ queryKey: ["intel"], queryFn: db.intel.list });
+  const ideas = useQuery({ queryKey: ["ideas"], queryFn: db.ideas.list });
+  const focus = useQuery({ queryKey: ["focus", "today"], queryFn: db.focus.today });
+
 
   const priority = (contacts.data ?? []).filter(c => {
     const days = daysSince(c.last_contact_date) ?? 999;
