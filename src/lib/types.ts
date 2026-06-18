@@ -205,3 +205,17 @@ export const FOLDERS_BY_TYPE: Record<ContactType, { value: string; label: string
   distributor: [{ value: "default", label: "All" }],
   internal: [{ value: "default", label: "All" }],
 };
+
+export interface CaptureLogEntry {
+  id: string;
+  source: string;
+  original_filename: string | null;
+  raw_text: string;
+  char_count: number | null;
+  routed_to: string | null;
+  routed_id: string | null;
+  mode: string | null;
+  status: string;
+  error_text: string | null;
+  created_at: string;
+}
