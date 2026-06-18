@@ -105,6 +105,10 @@ export type Database = {
           ai_synthesised_at: string | null
           blockers: string[] | null
           confidence_score: number | null
+          drive_doc_content: string | null
+          drive_doc_id: string | null
+          drive_doc_url: string | null
+          drive_synced_at: string | null
           emoji: string
           id: string
           last_updated: string
@@ -119,6 +123,10 @@ export type Database = {
           ai_synthesised_at?: string | null
           blockers?: string[] | null
           confidence_score?: number | null
+          drive_doc_content?: string | null
+          drive_doc_id?: string | null
+          drive_doc_url?: string | null
+          drive_synced_at?: string | null
           emoji: string
           id?: string
           last_updated?: string
@@ -133,6 +141,10 @@ export type Database = {
           ai_synthesised_at?: string | null
           blockers?: string[] | null
           confidence_score?: number | null
+          drive_doc_content?: string | null
+          drive_doc_id?: string | null
+          drive_doc_url?: string | null
+          drive_synced_at?: string | null
           emoji?: string
           id?: string
           last_updated?: string
