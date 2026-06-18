@@ -210,7 +210,8 @@ function mondayISO(d = new Date()) {
 export const syncSectionToDrive = createServerFn({ method: "POST" })
   .inputValidator((d: { slug: string }) => d)
   .handler(async ({ data }) => {
-    const { data: sec, error: secErr } = await supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: sec, error: secErr } = await supabaseAdmin
       .from("business_sections")
       .select("*")
       .eq("slug", data.slug)
