@@ -317,7 +317,7 @@ function TopicsPage() {
         <Plus className="h-6 w-6" />
       </button>
 
-      {showNew && <NewTopicSheet onClose={() => setShowNew(false)} contacts={contacts} />}
+      {showNew && <NewTopicSheet onClose={() => setShowNew(false)} contacts={contacts} defaultMode={activeMode ?? "dobot"} />}
       {showRefresh && <RefreshSheet onClose={() => setShowRefresh(false)} topics={topics} contacts={contacts} />}
     </Shell>
   );
