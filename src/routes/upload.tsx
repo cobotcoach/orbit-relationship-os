@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useRef, useState } from "react";
 import { Upload, FileText, Loader2, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { Shell } from "@/components/Shell";
+import { ingestFromBrowser } from "@/lib/ingest.functions";
 
 export const Route = createFileRoute("/upload")({
   component: UploadPage,
@@ -77,6 +79,7 @@ function UploadPage() {
   const [summary, setSummary] = useState<{ total: number; ideas: number; actions: number; intel: number; failed: number } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const ingest = useServerFn(ingestFromBrowser);
 
   const addFiles = useCallback((files: FileList | File[]) => {
     const arr = Array.from(files).filter(f => f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf"));
@@ -94,11 +97,6 @@ function UploadPage() {
   };
 
   const processAll = async () => {
-    const apiKey = import.meta.env.VITE_INGEST_API_KEY as string | undefined;
-    if (!apiKey || apiKey === "your-secret-key-here") {
-      alert("VITE_INGEST_API_KEY is not configured.");
-      return;
-    }
     setRunning(true);
     const pending = queue.filter(q => q.status === "queued");
     setProgress({ done: 0, total: pending.length });
@@ -111,27 +109,21 @@ function UploadPage() {
         const text = await extractPdfText(item.file);
         if (!text) throw new Error("No text extracted");
         const title = cleanFilename(item.file.name);
-        const res = await fetch("/api/ingest", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
+        const json = await ingest({
+          data: {
             transcript: text,
             source: "pdf_upload",
             title,
             original_filename: item.file.name,
             recorded_at: new Date().toISOString(),
-          }),
+          },
         });
-        const json = await res.json();
-        if (!res.ok || !json.ok) throw new Error(json.error || `HTTP ${res.status}`);
+        if (!json.ok) throw new Error(json.error || "Ingest failed");
         const type = json.type as string;
         if (type === "action") actions++;
         else if (type === "intelligence" || type === "note") intel++;
         else ideas++;
-        setQueue(q => q.map(x => x.id === item.id ? { ...x, status: "done", result: { type, mode: json.mode } } : x));
+        setQueue(q => q.map(x => x.id === item.id ? { ...x, status: "done", result: { type, mode: json.mode ?? "" } } : x));
       } catch (e) {
         failed++;
         const msg = e instanceof Error ? e.message : String(e);
