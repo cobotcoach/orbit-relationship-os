@@ -1,10 +1,4 @@
-export type ContactType =
-  | "channel_partner"
-  | "end_user"
-  | "prospect"
-  | "ecosystem_partner"
-  | "distributor"
-  | "internal";
+export type ContactType = "partner" | "prospect" | "ecosystem";
 
 export interface Contact {
   id: string;
@@ -25,7 +19,6 @@ export interface Contact {
   created_at: string;
   updated_at: string;
 }
-
 
 export interface Activity {
   id: string;
@@ -50,61 +43,6 @@ export interface Action {
   completed_at: string | null;
 }
 
-export interface Quote {
-  id: string;
-  quote_ref: string;
-  contact_id: string | null;
-  company: string | null;
-  products: string | null;
-  value: number;
-  stage: "prospect" | "quoted" | "negotiating" | "won" | "lost";
-  channel: "partner" | "direct" | "distributor";
-  quote_date: string;
-  mode: string;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-
-export interface AppEvent {
-  id: string;
-  name: string;
-  event_date: string;
-  event_type: "attend" | "exhibit" | "host" | "sponsor";
-  status: "upcoming" | "active" | "complete";
-  notes: string | null;
-  linked_contact_ids: string[];
-  created_at: string;
-}
-
-export interface LoanEquipment {
-  id: string;
-  serial_number: string;
-  product_name: string;
-  contact_id: string | null;
-  date_out: string;
-  expected_return_date: string | null;
-  actual_return_date: string | null;
-  status: "on_loan" | "returned" | "missing";
-  notes: string | null;
-  created_at: string;
-}
-
-export interface SupportTicket {
-  id: string;
-  ticket_number: string;
-  contact_id: string | null;
-  equipment_serial: string | null;
-  issue: string;
-  priority: "low" | "medium" | "high" | "critical";
-  status: "open" | "in_progress" | "resolved";
-  assigned_to: string | null;
-  resolution_notes: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface IntelligenceItem {
   id: string;
   source: string;
@@ -118,7 +56,7 @@ export interface IntelligenceItem {
   created_at: string;
 }
 
-export type IdeaMode = "dobot" | "cobot_coach" | "life" | "wild";
+export type IdeaMode = "cobot_coach" | "wild";
 export type IdeaStatus = "new" | "reviewing" | "active" | "parked" | "done";
 
 export interface Idea {
@@ -149,9 +87,7 @@ export interface FocusItem {
 }
 
 export const IDEA_MODES: { value: IdeaMode; label: string; emoji: string; color: string }[] = [
-  { value: "dobot", label: "Dobot", emoji: "🔵", color: "blue" },
-  { value: "cobot_coach", label: "Cobot Coach", emoji: "🟠", color: "orange" },
-  { value: "life", label: "Life", emoji: "🟢", color: "green" },
+  { value: "cobot_coach", label: "Cobot Coach", emoji: "🟠", color: "amber" },
   { value: "wild", label: "Wild Ideas", emoji: "🟣", color: "purple" },
 ];
 
@@ -173,37 +109,26 @@ export interface SmartTopic {
   updated_at: string;
 }
 
-
-export const CONTACT_TYPES: { value: ContactType; label: string }[] = [
-  { value: "channel_partner", label: "Channel Partners" },
-  { value: "end_user", label: "End Users" },
-  { value: "prospect", label: "Prospects" },
-  { value: "ecosystem_partner", label: "Ecosystem Partners" },
-  { value: "distributor", label: "Distributors" },
-  { value: "internal", label: "Internal" },
+export const CONTACT_TYPES: { value: ContactType; label: string; description: string }[] = [
+  { value: "partner", label: "Partners", description: "SI integrators — your commercial targets" },
+  { value: "prospect", label: "Prospects", description: "Manufacturers — potential platform users" },
+  { value: "ecosystem", label: "Ecosystem", description: "Suppliers, robot makers, others" },
 ];
 
 export const FOLDERS_BY_TYPE: Record<ContactType, { value: string; label: string }[]> = {
-  channel_partner: [
-    { value: "active", label: "Active" },
-    { value: "onboarding_1", label: "Onboarding · Stage 1" },
-    { value: "onboarding_2", label: "Onboarding · Stage 2" },
-    { value: "onboarding_3", label: "Onboarding · Stage 3" },
-    { value: "onboarding_4", label: "Onboarding · Stage 4" },
-    { value: "lapsed", label: "Lapsed" },
-  ],
-  end_user: [
-    { value: "enterprise", label: "Enterprise" },
-    { value: "sme", label: "SME" },
+  partner: [
+    { value: "approached", label: "Approached" },
+    { value: "interested", label: "Interested" },
+    { value: "committed", label: "Committed" },
+    { value: "live", label: "Live" },
   ],
   prospect: [
-    { value: "hot", label: "Hot" },
     { value: "warm", label: "Warm" },
     { value: "cold", label: "Cold" },
   ],
-  ecosystem_partner: [{ value: "default", label: "All" }],
-  distributor: [{ value: "default", label: "All" }],
-  internal: [{ value: "default", label: "All" }],
+  ecosystem: [
+    { value: "default", label: "All" },
+  ],
 };
 
 export interface CaptureLogEntry {
@@ -259,4 +184,11 @@ export interface Decision {
   alternatives: string | null;
   made_at: string;
   review_at: string | null;
+}
+
+export interface MissionChat {
+  id: string;
+  question: string;
+  answer: string;
+  created_at: string;
 }

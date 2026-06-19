@@ -1,122 +1,163 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import { db } from "@/lib/db";
 import { Shell } from "@/components/Shell";
 import { EmptyState } from "@/components/ui-bits";
-import { generateFocus } from "@/lib/ai.functions";
-import { Target, Sparkles, Loader2, Check, SkipForward } from "lucide-react";
-import type { FocusItem } from "@/lib/types";
-import { useMode } from "@/lib/mode-context";
+import { Zap, Check, ChevronDown, ChevronUp, Trash2, Plus } from "lucide-react";
+import type { Action } from "@/lib/types";
 import { toast } from "sonner";
 
-
 export const Route = createFileRoute("/focus")({
-  head: () => ({ meta: [{ title: "ORBIT — Focus" }] }),
+  head: () => ({ meta: [{ title: "ORBIT — Today's Actions" }] }),
   component: FocusPage,
 });
 
-function todayISO() { return new Date().toISOString().slice(0, 10); }
+type Urgency = "low" | "medium" | "high" | "critical";
 
-function FocusCard({ item, index, onUpdate }: { item: FocusItem; index: number; onUpdate: (patch: Partial<FocusItem>) => void }) {
-  const done = item.status === "done";
-  const deferred = item.status === "deferred";
-  return (
-    <div className={`rounded-2xl bg-card border border-border p-5 ${done ? "opacity-50" : ""}`}>
-      <div className="flex items-start gap-4">
-        <div className={`flex-shrink-0 h-12 w-12 rounded-full flex items-center justify-center text-xl font-bold ${done ? "bg-muted text-muted-foreground" : "bg-primary text-primary-foreground"}`}>
-          {index + 1}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className={`text-base font-semibold leading-snug ${done ? "line-through" : ""}`}>{item.title}</p>
-          {item.why && <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{item.why}</p>}
-          {deferred && <p className="text-[11px] text-amber-400 mt-1.5">Deferred</p>}
-        </div>
-      </div>
-      {!done && !deferred && (
-        <div className="flex gap-2 mt-4">
-          <button onClick={() => onUpdate({ status: "done" })}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 bg-primary text-primary-foreground rounded-lg py-2 text-sm font-semibold">
-            <Check className="h-4 w-4" /> Done
-          </button>
-          <button onClick={() => onUpdate({ status: "deferred" })}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 bg-secondary text-secondary-foreground rounded-lg py-2 text-sm font-semibold">
-            <SkipForward className="h-4 w-4" /> Defer
-          </button>
-        </div>
-      )}
-    </div>
-  );
+const URG_TONE: Record<Urgency, string> = {
+  critical: "#ef4444",
+  high: "#ef4444",
+  medium: "#f59e0b",
+  low: "#8892a4",
+};
+
+function bucket(u: Urgency): "now" | "week" | "later" {
+  if (u === "critical" || u === "high") return "now";
+  if (u === "medium") return "week";
+  return "later";
 }
 
 function FocusPage() {
   const qc = useQueryClient();
-  const { activeMode, modeLabel } = useMode();
-  const { data: items = [] } = useQuery({ queryKey: ["focus", "today"], queryFn: db.focus.today });
-  const generateFn = useServerFn(generateFocus);
+  const { data: actions = [] } = useQuery({ queryKey: ["actions"], queryFn: db.actions.list });
+  const [newTitle, setNewTitle] = useState("");
 
-  const regenerate = useMutation({
-    mutationFn: async () => {
-      const [ideas, actions] = await Promise.all([db.ideas.list(), db.actions.list()]);
-      const openActions = actions.filter(a => a.status !== "done").slice(0, 10);
-      const recentIdeas = ideas.slice(0, 10);
-      const res = await generateFn({
-        data: {
-          ideas: recentIdeas.map(i => ({ id: i.id, title: i.title, summary: i.summary, mode: i.mode, energy_score: i.energy_score })),
-          actions: openActions.map(a => ({ id: a.id, title: a.title, urgency: a.urgency, contact_id: a.contact_id, due_date: a.due_date })),
-          mode: activeMode,
-        },
-      });
-
-      const today = todayISO();
-      await db.focus.clearForDate(today);
-      for (const it of res.items ?? []) {
-        await db.focus.insert({
-          title: it.title,
-          why: it.why,
-          priority: it.priority ?? 2,
-          linked_idea_id: it.linked_idea_id ?? null,
-          linked_contact_id: it.linked_contact_id ?? null,
-          date: today,
-          status: "pending",
-        });
-      }
-    },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["focus", "today"] }); toast.success("Focus regenerated"); },
+  const add = useMutation({
+    mutationFn: async (title: string) => db.actions.insert({ title, urgency: "medium", status: "open" }),
+    onSuccess: () => { setNewTitle(""); qc.invalidateQueries({ queryKey: ["actions"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const update = useMutation({
-    mutationFn: ({ id, patch }: { id: string; patch: Partial<FocusItem> }) => db.focus.update(id, patch),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["focus", "today"] }),
+    mutationFn: ({ id, patch }: { id: string; patch: Partial<Action> }) => db.actions.update(id, patch),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["actions"] }),
   });
 
-  const sorted = [...items].sort((a, b) => a.priority - b.priority);
+  const open = actions.filter(a => a.status !== "done" && a.status !== "deferred");
+  const cols = {
+    now:   open.filter(a => bucket(a.urgency) === "now"),
+    week:  open.filter(a => bucket(a.urgency) === "week"),
+    later: open.filter(a => bucket(a.urgency) === "later"),
+  };
 
-  const dateStr = new Date().toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
   return (
-    <Shell
-      title="Today's Focus"
-      subtitle={activeMode ? `${dateStr} · ${modeLabel}` : dateStr}
-
-
-      action={
-        <button onClick={() => regenerate.mutate()} disabled={regenerate.isPending}
-          className="inline-flex items-center gap-1.5 bg-primary/15 text-primary border border-primary/30 rounded-lg px-2.5 py-1.5 text-xs font-semibold disabled:opacity-50">
-          {regenerate.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-          Regenerate
+    <Shell title="Today's Actions" subtitle={`${open.length} open`}>
+      <form
+        onSubmit={(e) => { e.preventDefault(); if (newTitle.trim()) add.mutate(newTitle.trim()); }}
+        className="mb-5 flex gap-2"
+      >
+        <input
+          value={newTitle}
+          onChange={e => setNewTitle(e.target.value)}
+          placeholder="What needs to happen?"
+          className="flex-1"
+        />
+        <button
+          type="submit"
+          disabled={!newTitle.trim() || add.isPending}
+          className="h-11 px-4 rounded-lg bg-primary text-primary-foreground font-semibold inline-flex items-center gap-1.5 disabled:opacity-50"
+        >
+          <Plus className="h-4 w-4" /> Add
         </button>
-      }
-    >
-      {sorted.length === 0 ? (
-        <EmptyState icon={<Target className="h-7 w-7" />} title="No focus set for today" hint="Tap Regenerate to let Claude pick your top 3" />
+      </form>
+
+      {open.length === 0 ? (
+        <EmptyState
+          icon={<Zap className="h-7 w-7" />}
+          title="Nothing urgent. Go build something."
+          hint="Add an action above, or open Mission Control."
+        />
       ) : (
-        <div className="space-y-3">
-          {sorted.map((item, idx) => (
-            <FocusCard key={item.id} item={item} index={idx} onUpdate={(patch) => update.mutate({ id: item.id, patch })} />
-          ))}
+        <div className="grid md:grid-cols-3 gap-4">
+          <Column title="NOW" tone="#ef4444" items={cols.now} onUpdate={(id, patch) => update.mutate({ id, patch })} />
+          <Column title="THIS WEEK" tone="#f59e0b" items={cols.week} onUpdate={(id, patch) => update.mutate({ id, patch })} />
+          <Column title="LATER" tone="#8892a4" items={cols.later} onUpdate={(id, patch) => update.mutate({ id, patch })} />
         </div>
       )}
     </Shell>
+  );
+}
+
+function Column({ title, tone, items, onUpdate }: {
+  title: string; tone: string; items: Action[];
+  onUpdate: (id: string, patch: Partial<Action>) => void;
+}) {
+  return (
+    <div>
+      <h2 className="text-[11px] font-bold uppercase tracking-widest mb-2 flex items-center gap-2" style={{ color: tone }}>
+        <span className="h-1.5 w-1.5 rounded-full" style={{ background: tone }} />
+        {title} <span className="opacity-60">({items.length})</span>
+      </h2>
+      <div className="space-y-2">
+        {items.length === 0 && <p className="text-xs text-muted-foreground italic py-2">Empty.</p>}
+        {items.map(a => <ActionRow key={a.id} action={a} onUpdate={(p) => onUpdate(a.id, p)} />)}
+      </div>
+    </div>
+  );
+}
+
+function ActionRow({ action, onUpdate }: { action: Action; onUpdate: (patch: Partial<Action>) => void }) {
+  const [expanded, setExpanded] = useState(false);
+  const tone = URG_TONE[action.urgency];
+  return (
+    <div
+      className="rounded-xl bg-card border border-border overflow-hidden"
+      style={{ borderLeft: `3px solid ${tone}` }}
+    >
+      <div className="p-3 flex items-start gap-2">
+        <button
+          onClick={() => onUpdate({ status: "done", completed_at: new Date().toISOString() })}
+          aria-label="Mark done"
+          className="shrink-0 h-7 w-7 rounded-full border-2 flex items-center justify-center hover:bg-success/20 transition-colors"
+          style={{ borderColor: "var(--success)" }}
+        >
+          <Check className="h-4 w-4 text-success opacity-0 hover:opacity-100" />
+        </button>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium leading-snug">{action.title}</p>
+          {action.due_date && (
+            <p className="text-[11px] text-muted-foreground mt-0.5">Due {new Date(action.due_date).toLocaleDateString()}</p>
+          )}
+        </div>
+        <button onClick={() => setExpanded(e => !e)} className="shrink-0 p-1 text-muted-foreground">
+          {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </button>
+      </div>
+      {expanded && (
+        <div className="border-t border-border p-3 space-y-2 bg-background/40">
+          {action.description && <p className="text-xs text-foreground/85">{action.description}</p>}
+          <div className="flex items-center gap-2 flex-wrap">
+            <label className="text-[11px] uppercase tracking-wider text-muted-foreground">Urgency</label>
+            <select
+              value={action.urgency}
+              onChange={e => onUpdate({ urgency: e.target.value as Action["urgency"] })}
+              className="!h-9 !py-1 !min-h-0 max-w-[140px] text-sm"
+            >
+              <option value="critical">Critical</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+            <button
+              onClick={() => onUpdate({ status: "deferred" })}
+              className="ml-auto text-[11px] inline-flex items-center gap-1 px-2 py-1 rounded text-muted-foreground hover:text-foreground"
+            >
+              <Trash2 className="h-3 w-3" /> Defer
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
