@@ -1,5 +1,11 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Contact, Activity, Action, Quote, AppEvent, LoanEquipment, SupportTicket, IntelligenceItem, SmartTopic, Idea, FocusItem, CaptureLogEntry, BusinessSection, WeeklyCommitment, Decision } from "./types";
+import type { Contact, Activity, Action, IntelligenceItem, SmartTopic, Idea, FocusItem, CaptureLogEntry, BusinessSection, WeeklyCommitment, Decision, MissionChat } from "./types";
+
+// Legacy table row shims (tables retained in DB but no longer surfaced in UI).
+type Quote = { id: string; contact_id: string | null; value: number; stage: string; [k: string]: unknown };
+type AppEvent = { id: string; [k: string]: unknown };
+type LoanEquipment = { id: string; contact_id: string | null; status: string; [k: string]: unknown };
+type SupportTicket = { id: string; contact_id: string | null; [k: string]: unknown };
 
 function mondayISO(d = new Date()) {
   const date = new Date(d);
@@ -242,9 +248,9 @@ export const db = {
     },
   },
   missionChats: {
-    list: async (limit = 50): Promise<{ id: string; question: string; answer: string; created_at: string }[]> => {
+    list: async (limit = 50): Promise<MissionChat[]> => {
       const { data, error } = await supabase.from("mission_chats" as never).select("*").order("created_at", { ascending: false }).limit(limit);
-      if (error) throw error; return (data ?? []) as { id: string; question: string; answer: string; created_at: string }[];
+      if (error) throw error; return ((data ?? []) as MissionChat[]).reverse();
     },
     insert: async (q: string, a: string): Promise<void> => {
       const { error } = await supabase.from("mission_chats" as never).insert({ question: q, answer: a } as never);

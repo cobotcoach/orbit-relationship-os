@@ -1,15 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Loader2, RefreshCw, Plus, Check, X, ChevronDown, ChevronRight, Search, AlertTriangle, Cloud, CloudOff, ExternalLink, ArrowDown } from "lucide-react";
+import { Loader2, RefreshCw, Plus, Check, X, ChevronDown, ChevronRight, Search, AlertTriangle, Cloud, CloudOff, ExternalLink, ArrowDown, Sparkles, Zap, Target, Wrench, ChevronUp } from "lucide-react";
 import { db, mondayISO } from "@/lib/db";
 import { Shell } from "@/components/Shell";
 import { Pill, Section, EmptyState } from "@/components/ui-bits";
-import { useMode } from "@/lib/mode-context";
-import { synthesiseMissionControlSection, missionControlAsk } from "@/lib/ai.functions";
+import { AskOrbitPanel } from "@/components/AskOrbitPanel";
+import { synthesiseMissionControlSection } from "@/lib/ai.functions";
 import { syncSectionToDrive, pullFromDrive } from "@/lib/drive.functions";
-import type { BusinessSection, WeeklyCommitment, Decision, Idea, IntelligenceItem, Action, SmartTopic } from "@/lib/types";
+import type { BusinessSection, WeeklyCommitment, Decision, Idea, IntelligenceItem, Action, SmartTopic, CaptureLogEntry } from "@/lib/types";
 
 export const Route = createFileRoute("/mission")({
   head: () => ({ meta: [{ title: "ORBIT — Mission Control" }] }),
@@ -50,7 +50,6 @@ function statusPillTone(status: string): "success" | "warning" | "urgent" | "mut
 }
 
 function MissionPage() {
-  const { activeMode } = useMode();
   const qc = useQueryClient();
   const sections = useQuery({ queryKey: ["mc:sections"], queryFn: db.sections.list });
   const thisWeek = useQuery({ queryKey: ["mc:thisWeek"], queryFn: db.commitments.thisWeek });
@@ -60,6 +59,8 @@ function MissionPage() {
   const actions = useQuery({ queryKey: ["actions"], queryFn: db.actions.list });
   const intel = useQuery({ queryKey: ["intel"], queryFn: db.intel.list });
   const topics = useQuery({ queryKey: ["topics"], queryFn: db.topics.list });
+  const captures = useQuery({ queryKey: ["captures_log"], queryFn: db.log.list });
+  const [askOpen, setAskOpen] = useState(false);
 
   const synthesise = useServerFn(synthesiseMissionControlSection);
   const syncFn = useServerFn(syncSectionToDrive);
@@ -182,64 +183,60 @@ function MissionPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sections.data, ideas.data, actions.data, intel.data, topics.data]);
 
-  if (activeMode !== "cobot_coach") {
-    return (
-      <Shell title="Mission Control" subtitle="Cobot Coach only">
-        <EmptyState title="Switch to Cobot Coach mode" hint="Use the mode switcher above to access Mission Control" />
-      </Shell>
-    );
-  }
-
   const lastWeekDone = (lastWeek.data ?? []).filter(c => c.status === "done").length;
   const lastWeekTotal = (lastWeek.data ?? []).length;
 
   return (
     <Shell
       title="Mission Control"
-      subtitle={`Cobot Coach · ${weekLabel()}`}
+      subtitle={weekLabel()}
       action={
-        <div className="flex items-center gap-2 flex-wrap justify-end">
-          <div className={`text-xs font-semibold ${countdownColor}`}>
-            {days}d to Jul 31
-          </div>
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => runSynthesisFor(sections.data ?? [])}
-            disabled={synthRunning !== null}
-            className="h-9 px-3 rounded-full bg-primary text-primary-foreground text-xs font-medium inline-flex items-center gap-1.5 tap active:scale-95 disabled:opacity-50"
+            onClick={() => setAskOpen(true)}
+            className="h-10 px-3.5 rounded-full bg-primary text-primary-foreground text-xs font-bold inline-flex items-center gap-1.5 active:scale-95"
           >
-            {synthRunning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-            Synthesise
-          </button>
-          <button
-            onClick={() => syncAll(sections.data ?? [])}
-            disabled={syncProgress !== null}
-            className="h-9 px-3 rounded-full bg-secondary text-secondary-foreground text-xs font-medium inline-flex items-center gap-1.5 tap active:scale-95 disabled:opacity-50"
-          >
-            {syncProgress ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Cloud className="h-3.5 w-3.5" />}
-            Sync All to Drive
+            <Sparkles className="h-4 w-4" /> Ask ORBIT
           </button>
         </div>
       }
     >
+      {/* Top strip — launch countdown */}
+      <div className="mb-4 rounded-2xl bg-card border border-border p-3 flex items-center gap-3">
+        <span className="h-9 w-9 rounded-full bg-primary/20 text-primary flex items-center justify-center text-base">🟠</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Cobot Coach</p>
+            <span className={`text-sm font-bold tabular-nums ${countdownColor}`}>{days}d to launch</span>
+            <span className="text-[11px] text-muted-foreground">· 31 Jul 2026</span>
+          </div>
+        </div>
+        <button
+          onClick={() => runSynthesisFor(sections.data ?? [])}
+          disabled={synthRunning !== null}
+          aria-label="Synthesise"
+          title="Synthesise all sections"
+          className="h-9 w-9 rounded-full bg-surface-2 border border-border flex items-center justify-center text-muted-foreground disabled:opacity-50"
+        >
+          {synthRunning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+        </button>
+      </div>
+
       {synthProgress && (
         <div className="mb-3 rounded-xl bg-primary/10 border border-primary/30 px-3 py-2 text-xs text-primary inline-flex items-center gap-2">
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
           Synthesising {synthRunning} ({synthProgress.current}/{synthProgress.total})
         </div>
       )}
-      {syncProgress && (
-        <div className="mb-3 ml-2 rounded-xl bg-secondary border border-border px-3 py-2 text-xs inline-flex items-center gap-2">
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          Syncing {syncProgress.label}… ({syncProgress.current}/{syncProgress.total})
-        </div>
-      )}
 
-      <StuckChatPanel
-        sections={sections.data ?? []}
-        ideas={cobotIdeas}
-        intel={intel.data ?? []}
+      <TodayPanel
         actions={actions.data ?? []}
-        topics={topics.data ?? []}
+        commitments={thisWeek.data ?? []}
+        sections={sections.data ?? []}
+        onChange={() => {
+          qc.invalidateQueries({ queryKey: ["actions"] });
+          qc.invalidateQueries({ queryKey: ["mc:thisWeek"] });
+        }}
       />
 
       <WeeklyCommitmentsPanel
@@ -264,8 +261,135 @@ function MissionPage() {
         }}
       />
 
+      <RecentCapturesPanel captures={captures.data ?? []} />
+
       <DecisionLogPanel decisions={decisions.data ?? []} sections={sections.data ?? []} />
+
+      <AskOrbitPanel
+        open={askOpen}
+        onClose={() => setAskOpen(false)}
+        sections={sections.data ?? []}
+        ideas={ideas.data ?? []}
+        intel={intel.data ?? []}
+        actions={actions.data ?? []}
+        topics={topics.data ?? []}
+      />
     </Shell>
+  );
+}
+
+// ---------------- Today (3 items max) ----------------
+function TodayPanel({
+  actions, commitments, sections, onChange,
+}: {
+  actions: Action[];
+  commitments: WeeklyCommitment[];
+  sections: BusinessSection[];
+  onChange: () => void;
+}) {
+  const urgentRank: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+  const topAction = [...actions.filter(a => a.status !== "done" && a.status !== "deferred")]
+    .sort((a, b) => (urgentRank[a.urgency] ?? 9) - (urgentRank[b.urgency] ?? 9))[0];
+  const topCommit = commitments.find(c => c.status === "pending");
+  const topBlocker = [...sections.filter(s => s.status === "blocked")]
+    .sort((a, b) => (a.confidence_score ?? 5) - (b.confidence_score ?? 5))[0];
+
+  const items: { key: string; icon: typeof Zap; tone: string; title: string; sub?: string; onDone?: () => void; fix?: string }[] = [];
+  if (topAction) items.push({
+    key: `act-${topAction.id}`,
+    icon: Zap,
+    tone: topAction.urgency === "critical" || topAction.urgency === "high" ? "#ef4444" : "#f59e0b",
+    title: topAction.title,
+    sub: `Most urgent action · ${topAction.urgency}`,
+    onDone: async () => {
+      await db.actions.update(topAction.id, { status: "done", completed_at: new Date().toISOString() });
+      onChange();
+    },
+    fix: "/focus",
+  });
+  if (topCommit) {
+    const sec = sections.find(s => s.slug === topCommit.section_slug);
+    items.push({
+      key: `wc-${topCommit.id}`,
+      icon: Target,
+      tone: "#f59e0b",
+      title: topCommit.commitment,
+      sub: `This week · ${sec?.title ?? topCommit.section_slug}`,
+      onDone: async () => {
+        await db.commitments.update(topCommit.id, { status: "done", completed_at: new Date().toISOString() });
+        onChange();
+      },
+    });
+  }
+  if (topBlocker) items.push({
+    key: `blk-${topBlocker.slug}`,
+    icon: Wrench,
+    tone: "#ef4444",
+    title: `Blocker: ${topBlocker.title}`,
+    sub: topBlocker.next_action ?? (topBlocker.blockers ?? [])[0] ?? "Needs unblocking",
+    fix: "#",
+  });
+
+  if (items.length === 0) return null;
+
+  return (
+    <Section title="Today">
+      <div className="space-y-2">
+        {items.slice(0, 3).map(it => {
+          const Icon = it.icon;
+          return (
+            <div key={it.key} className="rounded-xl bg-card border border-border p-3 flex items-center gap-3" style={{ borderLeft: `3px solid ${it.tone}` }}>
+              <span className="h-9 w-9 rounded-lg flex items-center justify-center" style={{ background: `${it.tone}20`, color: it.tone }}>
+                <Icon className="h-4 w-4" />
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold leading-snug">{it.title}</p>
+                {it.sub && <p className="text-[11px] text-muted-foreground mt-0.5">{it.sub}</p>}
+              </div>
+              {it.onDone && (
+                <button onClick={it.onDone} className="shrink-0 h-9 px-3 rounded-lg bg-success/15 text-success border border-success/30 text-xs font-bold inline-flex items-center gap-1">
+                  <Check className="h-3.5 w-3.5" /> Done
+                </button>
+              )}
+              {!it.onDone && it.fix && (
+                <button className="shrink-0 h-9 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-bold">Fix it</button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </Section>
+  );
+}
+
+// ---------------- Recent Captures ----------------
+function RecentCapturesPanel({ captures }: { captures: CaptureLogEntry[] }) {
+  const [open, setOpen] = useState(false);
+  const recent = captures.slice(0, 5);
+  return (
+    <Section title="Recent captures">
+      <div className="rounded-xl bg-card border border-border">
+        <button onClick={() => setOpen(o => !o)} className="w-full p-3 flex items-center justify-between text-sm font-medium">
+          <span>{recent.length} recent · <Link to="/log" className="text-primary hover:underline" onClick={e => e.stopPropagation()}>View all</Link></span>
+          {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        </button>
+        {open && (
+          <div className="border-t border-border divide-y divide-border">
+            {recent.length === 0 && <p className="p-3 text-xs text-muted-foreground">Nothing captured yet.</p>}
+            {recent.map(c => (
+              <div key={c.id} className="p-3">
+                <div className="flex items-center gap-2 text-[11px] mb-1">
+                  <span className="text-muted-foreground">{c.source}</span>
+                  {c.routed_to && <Pill tone="muted">{c.routed_to}</Pill>}
+                  <span className="ml-auto text-muted-foreground">{new Date(c.created_at).toLocaleString()}</span>
+                </div>
+                <p className="text-sm line-clamp-2">{c.raw_text}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </Section>
   );
 }
 
@@ -774,131 +898,4 @@ function SectionGroupsPanel({
   );
 }
 
-// ---------------- Stuck Chat Panel ----------------
-function StuckChatPanel({
-  sections, ideas, intel, actions, topics,
-}: {
-  sections: BusinessSection[];
-  ideas: Idea[];
-  intel: IntelligenceItem[];
-  actions: Action[];
-  topics: SmartTopic[];
-}) {
-  const ask = useServerFn(missionControlAsk);
-  const qc = useQueryClient();
-  const history = useQuery({ queryKey: ["mc:chats"], queryFn: () => db.missionChats.list(20) });
-  const [question, setQuestion] = useState("");
-  const [pending, setPending] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [streamedAnswer, setStreamedAnswer] = useState<string | null>(null);
-
-  async function submit() {
-    const q = question.trim();
-    if (!q || loading) return;
-    setLoading(true);
-    setPending(q);
-    setStreamedAnswer(null);
-    setQuestion("");
-    try {
-      const thirtyDaysAgo = Date.now() - 30 * 86_400_000;
-      const recentIdeas = ideas
-        .filter(i => new Date(i.created_at).getTime() >= thirtyDaysAgo)
-        .slice(0, 40)
-        .map(i => ({ title: i.title, summary: i.summary, tags: i.tags, energy: i.energy_score }));
-      const recentIntel = intel
-        .filter(i => new Date(i.created_at).getTime() >= thirtyDaysAgo)
-        .slice(0, 25)
-        .map(i => ({ summary: i.summary, topics: i.topics }));
-      const openActions = actions.filter(a => a.status !== "done").slice(0, 25).map(a => ({ title: a.title, urgency: a.urgency }));
-      const openTopics = topics.filter(t => t.status !== "resolved").slice(0, 25).map(t => ({ title: t.title, status: t.status, next: t.next_action }));
-      const res = await ask({
-        data: {
-          question: q,
-          sections: sections.map(s => ({
-            title: s.title,
-            slug: s.slug,
-            status: s.status,
-            confidence: s.confidence_score ?? 5,
-            ownerSummary: s.owner_summary,
-            nextAction: s.next_action,
-            aiSynthesis: s.ai_synthesis,
-            blockers: s.blockers ?? [],
-          })),
-          recentIdeas,
-          recentIntel,
-          openActions,
-          openTopics,
-        },
-      });
-      setStreamedAnswer(res.answer);
-      await db.missionChats.insert(q, res.answer);
-      qc.invalidateQueries({ queryKey: ["mc:chats"] });
-    } catch (e) {
-      setStreamedAnswer(`Couldn't get an answer: ${e instanceof Error ? e.message : "unknown error"}`);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <Section title="Where are you stuck right now?">
-      <div className="rounded-xl bg-card border border-border p-3 space-y-3">
-        <div className="flex gap-2">
-          <textarea
-            value={question}
-            onChange={e => setQuestion(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit(); }}
-            placeholder="Ask ORBIT anything — uses all 12 sections + last 30 days of captures as context. ⌘+Enter to send."
-            rows={2}
-            className="flex-1 rounded-md bg-secondary border border-border p-2 text-sm resize-none"
-          />
-          <button
-            onClick={submit}
-            disabled={loading || !question.trim()}
-            className="self-stretch px-4 rounded-md bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50 inline-flex items-center gap-1.5"
-          >
-            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-            Ask
-          </button>
-        </div>
-
-        {(pending || streamedAnswer || (history.data && history.data.length > 0)) && (
-          <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
-            {pending && (
-              <div className="rounded-md bg-background border border-border p-2">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">You</p>
-                <p className="text-sm">{pending}</p>
-                {loading && (
-                  <p className="text-xs text-muted-foreground mt-2 inline-flex items-center gap-1.5">
-                    <Loader2 className="h-3 w-3 animate-spin" /> ORBIT is thinking…
-                  </p>
-                )}
-                {streamedAnswer && (
-                  <div className="mt-2 pt-2 border-t border-border">
-                    <p className="text-[10px] uppercase tracking-wider text-primary mb-1">ORBIT</p>
-                    <p className="text-sm whitespace-pre-wrap text-foreground/90">{streamedAnswer}</p>
-                  </div>
-                )}
-              </div>
-            )}
-            {(history.data ?? [])
-              .filter(h => !pending || h.question !== pending)
-              .map(h => (
-                <details key={h.id} className="rounded-md bg-background border border-border p-2">
-                  <summary className="text-sm cursor-pointer list-none flex items-start gap-2">
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">Q</span>
-                    <span className="flex-1">{h.question}</span>
-                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">{new Date(h.created_at).toLocaleDateString()}</span>
-                  </summary>
-                  <div className="mt-2 pt-2 border-t border-border">
-                    <p className="text-[10px] uppercase tracking-wider text-primary mb-1">ORBIT</p>
-                    <p className="text-sm whitespace-pre-wrap text-foreground/90">{h.answer}</p>
-                  </div>
-                </details>
-              ))}
-          </div>
-        )}
-      </div>
-    </Section>
-  );
-}
+// Stuck chat replaced by AskOrbitPanel.

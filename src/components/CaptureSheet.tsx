@@ -37,7 +37,7 @@ function tidyTranscript(value: string) {
 export function CaptureSheet({ onClose, defaultMode }: { onClose: () => void; defaultMode: IdeaMode | null }) {
   const qc = useQueryClient();
   const [text, setText] = useState("");
-  const [mode, setMode] = useState<IdeaMode>(defaultMode ?? "dobot");
+  const [mode, setMode] = useState<IdeaMode>(defaultMode ?? "cobot_coach");
   const [recState, setRecState] = useState<RecState>("idle");
   const [elapsed, setElapsed] = useState(0);
 
