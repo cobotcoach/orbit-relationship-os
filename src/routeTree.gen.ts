@@ -11,16 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as TopicsRouteImport } from './routes/topics'
-import { Route as PipelineRouteImport } from './routes/pipeline'
-import { Route as OperationsRouteImport } from './routes/operations'
 import { Route as MissionRouteImport } from './routes/mission'
 import { Route as LogRouteImport } from './routes/log'
 import { Route as IntelRouteImport } from './routes/intel'
-import { Route as InboxRouteImport } from './routes/inbox'
-import { Route as ImportRouteImport } from './routes/import'
 import { Route as IdeasRouteImport } from './routes/ideas'
 import { Route as FocusRouteImport } from './routes/focus'
-import { Route as CobotCoachRouteImport } from './routes/cobot-coach'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ContactsIndexRouteImport } from './routes/contacts.index'
 import { Route as ContactsNewRouteImport } from './routes/contacts.new'
@@ -38,16 +33,6 @@ const TopicsRoute = TopicsRouteImport.update({
   path: '/topics',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PipelineRoute = PipelineRouteImport.update({
-  id: '/pipeline',
-  path: '/pipeline',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OperationsRoute = OperationsRouteImport.update({
-  id: '/operations',
-  path: '/operations',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const MissionRoute = MissionRouteImport.update({
   id: '/mission',
   path: '/mission',
@@ -63,16 +48,6 @@ const IntelRoute = IntelRouteImport.update({
   path: '/intel',
   getParentRoute: () => rootRouteImport,
 } as any)
-const InboxRoute = InboxRouteImport.update({
-  id: '/inbox',
-  path: '/inbox',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ImportRoute = ImportRouteImport.update({
-  id: '/import',
-  path: '/import',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IdeasRoute = IdeasRouteImport.update({
   id: '/ideas',
   path: '/ideas',
@@ -81,11 +56,6 @@ const IdeasRoute = IdeasRouteImport.update({
 const FocusRoute = FocusRouteImport.update({
   id: '/focus',
   path: '/focus',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CobotCoachRoute = CobotCoachRouteImport.update({
-  id: '/cobot-coach',
-  path: '/cobot-coach',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -121,16 +91,11 @@ const ApiIngestRoute = ApiIngestRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/cobot-coach': typeof CobotCoachRoute
   '/focus': typeof FocusRoute
   '/ideas': typeof IdeasRoute
-  '/import': typeof ImportRoute
-  '/inbox': typeof InboxRoute
   '/intel': typeof IntelRoute
   '/log': typeof LogRoute
   '/mission': typeof MissionRoute
-  '/operations': typeof OperationsRoute
-  '/pipeline': typeof PipelineRoute
   '/topics': typeof TopicsRoute
   '/upload': typeof UploadRoute
   '/api/ingest': typeof ApiIngestRoute
@@ -141,16 +106,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/cobot-coach': typeof CobotCoachRoute
   '/focus': typeof FocusRoute
   '/ideas': typeof IdeasRoute
-  '/import': typeof ImportRoute
-  '/inbox': typeof InboxRoute
   '/intel': typeof IntelRoute
   '/log': typeof LogRoute
   '/mission': typeof MissionRoute
-  '/operations': typeof OperationsRoute
-  '/pipeline': typeof PipelineRoute
   '/topics': typeof TopicsRoute
   '/upload': typeof UploadRoute
   '/api/ingest': typeof ApiIngestRoute
@@ -162,16 +122,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/cobot-coach': typeof CobotCoachRoute
   '/focus': typeof FocusRoute
   '/ideas': typeof IdeasRoute
-  '/import': typeof ImportRoute
-  '/inbox': typeof InboxRoute
   '/intel': typeof IntelRoute
   '/log': typeof LogRoute
   '/mission': typeof MissionRoute
-  '/operations': typeof OperationsRoute
-  '/pipeline': typeof PipelineRoute
   '/topics': typeof TopicsRoute
   '/upload': typeof UploadRoute
   '/api/ingest': typeof ApiIngestRoute
@@ -184,16 +139,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/cobot-coach'
     | '/focus'
     | '/ideas'
-    | '/import'
-    | '/inbox'
     | '/intel'
     | '/log'
     | '/mission'
-    | '/operations'
-    | '/pipeline'
     | '/topics'
     | '/upload'
     | '/api/ingest'
@@ -204,16 +154,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/cobot-coach'
     | '/focus'
     | '/ideas'
-    | '/import'
-    | '/inbox'
     | '/intel'
     | '/log'
     | '/mission'
-    | '/operations'
-    | '/pipeline'
     | '/topics'
     | '/upload'
     | '/api/ingest'
@@ -224,16 +169,11 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/cobot-coach'
     | '/focus'
     | '/ideas'
-    | '/import'
-    | '/inbox'
     | '/intel'
     | '/log'
     | '/mission'
-    | '/operations'
-    | '/pipeline'
     | '/topics'
     | '/upload'
     | '/api/ingest'
@@ -245,16 +185,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CobotCoachRoute: typeof CobotCoachRoute
   FocusRoute: typeof FocusRoute
   IdeasRoute: typeof IdeasRoute
-  ImportRoute: typeof ImportRoute
-  InboxRoute: typeof InboxRoute
   IntelRoute: typeof IntelRoute
   LogRoute: typeof LogRoute
   MissionRoute: typeof MissionRoute
-  OperationsRoute: typeof OperationsRoute
-  PipelineRoute: typeof PipelineRoute
   TopicsRoute: typeof TopicsRoute
   UploadRoute: typeof UploadRoute
   ApiIngestRoute: typeof ApiIngestRoute
@@ -280,20 +215,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TopicsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/pipeline': {
-      id: '/pipeline'
-      path: '/pipeline'
-      fullPath: '/pipeline'
-      preLoaderRoute: typeof PipelineRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/operations': {
-      id: '/operations'
-      path: '/operations'
-      fullPath: '/operations'
-      preLoaderRoute: typeof OperationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/mission': {
       id: '/mission'
       path: '/mission'
@@ -315,20 +236,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IntelRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/inbox': {
-      id: '/inbox'
-      path: '/inbox'
-      fullPath: '/inbox'
-      preLoaderRoute: typeof InboxRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/import': {
-      id: '/import'
-      path: '/import'
-      fullPath: '/import'
-      preLoaderRoute: typeof ImportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/ideas': {
       id: '/ideas'
       path: '/ideas'
@@ -341,13 +248,6 @@ declare module '@tanstack/react-router' {
       path: '/focus'
       fullPath: '/focus'
       preLoaderRoute: typeof FocusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cobot-coach': {
-      id: '/cobot-coach'
-      path: '/cobot-coach'
-      fullPath: '/cobot-coach'
-      preLoaderRoute: typeof CobotCoachRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -397,16 +297,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CobotCoachRoute: CobotCoachRoute,
   FocusRoute: FocusRoute,
   IdeasRoute: IdeasRoute,
-  ImportRoute: ImportRoute,
-  InboxRoute: InboxRoute,
   IntelRoute: IntelRoute,
   LogRoute: LogRoute,
   MissionRoute: MissionRoute,
-  OperationsRoute: OperationsRoute,
-  PipelineRoute: PipelineRoute,
   TopicsRoute: TopicsRoute,
   UploadRoute: UploadRoute,
   ApiIngestRoute: ApiIngestRoute,
