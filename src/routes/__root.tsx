@@ -83,7 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Mawson — AI Relationship OS" },
       { property: "og:description", content: "Mawson — AI relationship operating system" },
       { property: "og:type", content: "website" },
-      { name: "theme-color", content: "#0d1117" },
+      { name: "theme-color", content: "#f8f7f4" },
       { name: "twitter:title", content: "Mawson — AI Relationship OS" },
       { name: "twitter:description", content: "Mawson — AI relationship operating system" },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/52603b59-47f1-4c6a-bc77-ba72282fdf23/id-preview-731a47d5--0b92ac4a-1434-487c-9777-8a5a4cf58306.lovable.app-1781811034387.png" },
