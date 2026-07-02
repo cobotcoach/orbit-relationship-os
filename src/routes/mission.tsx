@@ -12,7 +12,7 @@ import { syncSectionToDrive, pullFromDrive } from "@/lib/drive.functions";
 import type { BusinessSection, WeeklyCommitment, Decision, Idea, IntelligenceItem, Action, SmartTopic, CaptureLogEntry } from "@/lib/types";
 
 export const Route = createFileRoute("/mission")({
-  head: () => ({ meta: [{ title: "ORBIT — Mission Control" }] }),
+  head: () => ({ meta: [{ title: "Mawson — Mission Control" }] }),
   component: MissionPage,
 });
 
@@ -196,7 +196,7 @@ function MissionPage() {
             onClick={() => setAskOpen(true)}
             className="h-10 px-3.5 rounded-full bg-primary text-primary-foreground text-xs font-bold inline-flex items-center gap-1.5 active:scale-95"
           >
-            <Sparkles className="h-4 w-4" /> Ask ORBIT
+            <Sparkles className="h-4 w-4" /> Ask Mawson
           </button>
         </div>
       }
@@ -580,7 +580,7 @@ function SectionCard({
           <button
             onClick={() => pullSection(section.slug)}
             disabled={syncing}
-            title="Pull Drive doc into ORBIT"
+            title="Pull Drive doc into Mawson"
             className="ml-auto inline-flex items-center gap-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
           >
             Pull <ArrowDown className="h-3 w-3" />

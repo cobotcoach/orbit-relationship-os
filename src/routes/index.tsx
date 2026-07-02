@@ -1,7 +1,7 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
-  head: () => ({ meta: [{ title: "ORBIT — Mission Control" }] }),
+  head: () => ({ meta: [{ title: "Mawson — Mission Control" }] }),
   component: HomeRedirect,
 });
 

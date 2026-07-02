@@ -1,11 +1,11 @@
 {
-  "name": "ORBIT — AI Relationship OS",
-  "short_name": "ORBIT",
+  "name": "Mawson — AI Relationship OS",
+  "short_name": "Mawson",
   "description": "AI relationship operating system for managing connections, intel, and business.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0d1117",
-  "theme_color": "#0d1117",
+  "background_color": "#f8f7f4",
+  "theme_color": "#f8f7f4",
   "orientation": "portrait",
   "icons": [
     {

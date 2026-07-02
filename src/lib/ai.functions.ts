@@ -50,7 +50,7 @@ function safeJSON<T>(s: string, fallback: T): T {
 export const categoriseContact = createServerFn({ method: "POST" })
   .inputValidator((d: { description: string }) => d)
   .handler(async ({ data }) => {
-    const sys = `You are ORBIT, an AI relationship OS for Dobot Robotics UK (cobots, robotics). Categorise the contact described.
+    const sys = `You are Mawson, an AI relationship OS for Dobot Robotics UK (cobots, robotics). Categorise the contact described.
 Return JSON: { "type": one of [channel_partner, end_user, prospect, ecosystem_partner, distributor, internal], "folder": valid folder for that type, "industry": short string or null, "tags": string[] (max 5), "rationale": 1 sentence }.
 Folders by type:
 - channel_partner: active, onboarding_1, onboarding_2, onboarding_3, onboarding_4, lapsed
@@ -65,7 +65,7 @@ Folders by type:
 export const processInbox = createServerFn({ method: "POST" })
   .inputValidator((d: { text: string; existingContacts: { id: string; name: string; company: string | null }[] }) => d)
   .handler(async ({ data }) => {
-    const sys = `You are ORBIT, an AI relationship OS for Dobot Robotics UK. Analyse the input (email/transcript/internal comms) and return JSON:
+    const sys = `You are Mawson, an AI relationship OS for Dobot Robotics UK. Analyse the input (email/transcript/internal comms) and return JSON:
 {
   "summary": one concise line,
   "sentiment": "positive"|"neutral"|"negative",
@@ -99,7 +99,7 @@ export const generateStrategy = createServerFn({ method: "POST" })
     tickets: unknown[];
   }) => d)
   .handler(async ({ data }) => {
-    const sys = `You are ORBIT, strategic AI advisor to Richard, UK Country Manager at Dobot Robotics. Be sharp, specific to robotics/cobots channel sales. No fluff.
+    const sys = `You are Mawson, strategic AI advisor to Richard, UK Country Manager at Dobot Robotics. Be sharp, specific to robotics/cobots channel sales. No fluff.
 Return markdown with these sections:
 ## Situation
 2-4 sentences.
@@ -121,7 +121,7 @@ One paragraph — the unconventional play.`;
 export const generateSegmentBriefing = createServerFn({ method: "POST" })
   .inputValidator((d: { folderLabel: string; contacts: unknown[] }) => d)
   .handler(async ({ data }) => {
-    const sys = `You are ORBIT briefing Richard (UK Country Manager, Dobot Robotics) on a segment of his pipeline. Be punchy and specific.
+    const sys = `You are Mawson briefing Richard (UK Country Manager, Dobot Robotics) on a segment of his pipeline. Be punchy and specific.
 Return markdown:
 ## Snapshot
 1-2 sentences.
@@ -143,7 +143,7 @@ Return markdown:
 export const prioritiseTasks = createServerFn({ method: "POST" })
   .inputValidator((d: { tasks: unknown[]; contacts: unknown[] }) => d)
   .handler(async ({ data }) => {
-    const sys = `You are ORBIT, advising Richard (UK Country Manager, Dobot Robotics). Reorder the open tasks by strategic priority — weighting urgency, due dates, contact health (low health = more urgent), and channel-partner momentum.
+    const sys = `You are Mawson, advising Richard (UK Country Manager, Dobot Robotics). Reorder the open tasks by strategic priority — weighting urgency, due dates, contact health (low health = more urgent), and channel-partner momentum.
 Return JSON: { "ordered_ids": string[] (every task id, most important first), "summary": "1-2 sentence morning briefing covering the top focus today" }.`;
     const user = `TASKS:\n${JSON.stringify(data.tasks, null, 2)}\n\nCONTACTS:\n${JSON.stringify(data.contacts, null, 2)}`;
     const raw = await callAI({ system: sys, user, json: true });
@@ -185,7 +185,7 @@ function chunkText(text: string, maxChars = 12000): string[] {
 export const extractImportData = createServerFn({ method: "POST" })
   .inputValidator((d: { text: string; mode: "email" | "generic" }) => d)
   .handler(async ({ data }) => {
-    const sys = `You are ORBIT, an AI relationship OS for Dobot Robotics UK (cobots, robotics). Analyse the supplied ${data.mode === "email" ? "email dump (headers, threads, CSV/PST export text)" : "arbitrary data dump (meeting notes, LinkedIn export, CRM export, spreadsheet text, etc.)"} and extract EVERY unique person mentioned plus any actions and intelligence.
+    const sys = `You are Mawson, an AI relationship OS for Dobot Robotics UK (cobots, robotics). Analyse the supplied ${data.mode === "email" ? "email dump (headers, threads, CSV/PST export text)" : "arbitrary data dump (meeting notes, LinkedIn export, CRM export, spreadsheet text, etc.)"} and extract EVERY unique person mentioned plus any actions and intelligence.
 Return JSON:
 {
   "contacts": [{
@@ -242,7 +242,7 @@ export const refreshTopicsFromText = createServerFn({ method: "POST" })
     contacts: { id: string; name: string; company: string | null }[];
   }) => d)
   .handler(async ({ data }) => {
-    const sys = `You are ORBIT, an AI relationship OS for Dobot Robotics UK. You manage Smart Topics — open situations/threads tied to contacts (not tasks).
+    const sys = `You are Mawson, an AI relationship OS for Dobot Robotics UK. You manage Smart Topics — open situations/threads tied to contacts (not tasks).
 A new email or meeting transcript has arrived. Update existing topics, create new ones, and mark resolved ones.
 Statuses: waiting_on_them, waiting_on_you, active, stalled, resolved.
 
@@ -262,11 +262,11 @@ Be conservative — only update topics if the text genuinely speaks to them. Alw
 export const processIdea = createServerFn({ method: "POST" })
   .inputValidator((d: { text: string; mode?: string | null }) => d)
   .handler(async ({ data }) => {
-    const { ORBIT_CLASSIFIER_SYSTEM } = await import("./ingest.functions");
+    const { Mawson_CLASSIFIER_SYSTEM } = await import("./ingest.functions");
     const modeHint = data.mode
       ? `\n\nThe user is currently in MODE: "${data.mode}". Strongly prefer this mode unless the content clearly belongs elsewhere.`
       : "";
-    const raw = await callAI({ system: ORBIT_CLASSIFIER_SYSTEM + modeHint, user: data.text, json: true });
+    const raw = await callAI({ system: Mawson_CLASSIFIER_SYSTEM + modeHint, user: data.text, json: true });
     const parsed = safeJSON<{
       title?: string;
       summary?: string;
@@ -290,7 +290,7 @@ export const generateFocus = createServerFn({ method: "POST" })
     const modeHint = data.mode
       ? `\nThe user is currently in MODE: "${data.mode}". Weight focus items relevant to this mode much higher; only include other-mode items if genuinely critical today.`
       : "";
-    const sys = `You are ORBIT, Richard's strategic focus engine (UK Country Manager, Dobot Robotics). Read recent ideas and open actions. Return EXACTLY 3 focus items for today, prioritised by impact + momentum.${modeHint}
+    const sys = `You are Mawson, Richard's strategic focus engine (UK Country Manager, Dobot Robotics). Read recent ideas and open actions. Return EXACTLY 3 focus items for today, prioritised by impact + momentum.${modeHint}
 Return JSON: { "items": [{ "title": short imperative, "why": one sentence on why this matters NOW, "priority": 1|2|3, "linked_idea_id": id|null, "linked_contact_id": id|null }] }
 Priority 1 = most important. Pick the highest-leverage 3 — not just the loudest.`;
     const user = `RECENT IDEAS:\n${JSON.stringify(data.ideas, null, 2)}\n\nOPEN ACTIONS:\n${JSON.stringify(data.actions, null, 2)}`;
@@ -302,7 +302,7 @@ Priority 1 = most important. Pick the highest-leverage 3 — not just the loudes
 export const extractTopicsFromText = createServerFn({ method: "POST" })
   .inputValidator((d: { text: string; contacts: { id: string; name: string; company: string | null }[] }) => d)
   .handler(async ({ data }) => {
-    const sys = `You are ORBIT. Extract Smart Topics (open situations/threads) from the supplied text. Each topic = one ongoing thing tied to a contact.
+    const sys = `You are Mawson. Extract Smart Topics (open situations/threads) from the supplied text. Each topic = one ongoing thing tied to a contact.
 Return JSON: { "topics": [{ "title": short, "contact_hint": name|null, "status": one of [waiting_on_them, waiting_on_you, active, stalled], "last_update": one-line, "next_action": string|null }] }`;
     const user = `CONTACTS:\n${JSON.stringify(data.contacts, null, 2)}\n\nTEXT:\n${data.text}`;
     const raw = await callAI({ system: sys, user, json: true });
@@ -310,7 +310,7 @@ Return JSON: { "topics": [{ "title": short, "contact_hint": name|null, "status":
   });
 
 // 11. Synthesise a single Mission Control section
-const MISSION_CONTROL_SYSTEM = `You are ORBIT, the strategic AI advisor for Richard Mawson who is building Cobot Coach (WMH Robotics Ltd) — a brand-agnostic collaborative robotics platform connecting SI integrators with UK manufacturing SMEs.
+const MISSION_CONTROL_SYSTEM = `You are Mawson, the strategic AI advisor for Richard Mawson who is building Cobot Coach (WMH Robotics Ltd) — a brand-agnostic collaborative robotics platform connecting SI integrators with UK manufacturing SMEs.
 
 Key context:
 - Richard is still employed at Dobot Robotics UK as Country Manager while building this

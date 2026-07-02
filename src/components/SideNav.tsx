@@ -15,7 +15,7 @@ export function SideNav() {
     <aside className="hidden md:flex fixed left-0 top-0 bottom-0 z-40 flex-col glass border-r border-border w-20 xl:w-64 py-5">
       <Link to="/mission" className="px-5 mb-7 flex items-center gap-2">
         <span className="h-9 w-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-display font-bold text-lg">O</span>
-        <span className="hidden xl:inline text-xl font-bold font-display tracking-tight">ORBIT</span>
+        <span className="hidden xl:inline text-xl font-bold font-display tracking-tight">Mawson</span>
       </Link>
       <nav className="flex-1 flex flex-col gap-0.5">
         {items.map(({ to, label, icon: Icon }) => (

@@ -10,7 +10,7 @@ import { lastContactLabel } from "@/lib/format";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/contacts/")({
-  head: () => ({ meta: [{ title: "ORBIT — Partners" }] }),
+  head: () => ({ meta: [{ title: "Mawson — Partners" }] }),
   component: PartnersPage,
 });
 

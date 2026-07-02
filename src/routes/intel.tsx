@@ -8,7 +8,7 @@ import { Radio, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/intel")({
-  head: () => ({ meta: [{ title: "ORBIT — Intel" }] }),
+  head: () => ({ meta: [{ title: "Mawson — Intel" }] }),
   component: IntelPage,
 });
 

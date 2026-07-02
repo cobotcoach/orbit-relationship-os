@@ -13,7 +13,7 @@ import { toast } from "sonner";
 
 
 export const Route = createFileRoute("/topics")({
-  head: () => ({ meta: [{ title: "ORBIT — Smart Topics" }] }),
+  head: () => ({ meta: [{ title: "Mawson — Smart Topics" }] }),
   component: TopicsPage,
 });
 

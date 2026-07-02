@@ -83,7 +83,7 @@ export function AskOrbitPanel({ open, onClose, sections, ideas, intel, actions, 
       await db.missionChats.insert(trimmed, res.answer);
       await qc.invalidateQueries({ queryKey: ["mission_chats"] });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Ask ORBIT failed");
+      toast.error(e instanceof Error ? e.message : "Ask Mawson failed");
       // remove optimistic
       qc.setQueryData<typeof chats.data>(["mission_chats"], (prev) => (prev ?? []).filter(c => !c.id.startsWith("tmp-")));
     } finally {
@@ -104,7 +104,7 @@ export function AskOrbitPanel({ open, onClose, sections, ideas, intel, actions, 
               <Sparkles className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <h2 className="font-display font-bold text-base leading-tight">Ask ORBIT</h2>
+              <h2 className="font-display font-bold text-base leading-tight">Ask Mawson</h2>
               <p className="text-[11px] text-muted-foreground truncate">
                 Knows: {sections.length} sections · {ideas.length} ideas · {openActions.length} open · {intel.length} intel
               </p>
@@ -174,7 +174,7 @@ export function AskOrbitPanel({ open, onClose, sections, ideas, intel, actions, 
               if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); }
             }}
             rows={1}
-            placeholder="Ask ORBIT anything…"
+            placeholder="Ask Mawson anything…"
             className="flex-1 resize-none max-h-32"
           />
           <button

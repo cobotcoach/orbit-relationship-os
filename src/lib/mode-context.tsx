@@ -14,11 +14,11 @@ interface ModeCtx {
 }
 
 const Ctx = createContext<ModeCtx | null>(null);
-const STORAGE_KEY = "orbit.activeMode";
+const STORAGE_KEY = "mawson.activeMode";
 
 const META: Record<IdeaMode, { label: string; emoji: string; accent: string }> = {
-  cobot_coach: { label: "Cobot Coach", emoji: "🟠", accent: "#f59e0b" },
-  wild:        { label: "Wild Ideas",  emoji: "🟣", accent: "#a855f7" },
+  cobot_coach: { label: "Cobot Coach", emoji: "🩷", accent: "#ec4899" },
+  wild:        { label: "Wild Ideas",  emoji: "🟣", accent: "#9333ea" },
 };
 
 export function ModeProvider({ children }: { children: ReactNode }) {
@@ -75,7 +75,7 @@ export function ModeToggle({ className = "" }: { className?: string }) {
             className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
             style={{
               background: active ? meta.accent : "transparent",
-              color: active ? "#0c0d10" : "var(--muted-fg)",
+              color: active ? "#ffffff" : "var(--muted-fg)",
               minHeight: 32,
             }}
           >
