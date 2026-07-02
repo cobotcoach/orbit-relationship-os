@@ -14,7 +14,7 @@ interface ModeCtx {
 }
 
 const Ctx = createContext<ModeCtx | null>(null);
-const STORAGE_KEY = "orbit.activeMode";
+const STORAGE_KEY = "mawson.activeMode";
 
 const META: Record<IdeaMode, { label: string; emoji: string; accent: string }> = {
   cobot_coach: { label: "Cobot Coach", emoji: "🟠", accent: "#f59e0b" },

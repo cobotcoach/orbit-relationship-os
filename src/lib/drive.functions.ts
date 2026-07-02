@@ -3,7 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 const DRIVE_GATEWAY = "https://connector-gateway.lovable.dev/google_drive/drive/v3";
 const DOCS_GATEWAY = "https://connector-gateway.lovable.dev/google_docs/v1";
 const FOLDER_ID = "10qAq6c-Mc15LtMVRXNduSa9kZTTSw71w";
-const ORBIT_URL = "https://orbithub2026.lovable.app/mission";
+const Mawson_URL = "https://mawson.lovable.app/mission";
 const SEP = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
 
 function driveHeaders(): Record<string, string> {
@@ -57,9 +57,9 @@ function buildDocContent(args: {
   const { section, decisions, ideas, commitments } = args;
   const lines: string[] = [];
   lines.push(`${section.emoji} ${section.title} — Cobot Coach`);
-  lines.push(`Last synced from ORBIT: ${new Date().toISOString()}`);
+  lines.push(`Last synced from Mawson: ${new Date().toISOString()}`);
   lines.push(`Status: ${section.status} | Confidence: ${section.confidence_score ?? "-"}/10`);
-  lines.push(`View in ORBIT: ${ORBIT_URL}`);
+  lines.push(`View in Mawson: ${Mawson_URL}`);
   lines.push(SEP);
   lines.push("");
   lines.push("WHAT THIS IS");

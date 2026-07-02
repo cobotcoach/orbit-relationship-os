@@ -9,7 +9,7 @@ import type { Action } from "@/lib/types";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/focus")({
-  head: () => ({ meta: [{ title: "ORBIT — Today's Actions" }] }),
+  head: () => ({ meta: [{ title: "Mawson — Today's Actions" }] }),
   component: FocusPage,
 });
 

@@ -11,7 +11,7 @@ import { generateStrategy } from "@/lib/ai.functions";
 import { lastContactLabel, typeLabel, folderLabel } from "@/lib/format";
 
 export const Route = createFileRoute("/contacts/$id")({
-  head: () => ({ meta: [{ title: "Partner — ORBIT" }] }),
+  head: () => ({ meta: [{ title: "Partner — Mawson" }] }),
   component: ContactDetail,
 });
 

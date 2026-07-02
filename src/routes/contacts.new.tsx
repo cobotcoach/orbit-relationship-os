@@ -7,7 +7,7 @@ import { CONTACT_TYPES, FOLDERS_BY_TYPE, ContactType } from "@/lib/types";
 import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/contacts/new")({
-  head: () => ({ meta: [{ title: "New Partner — ORBIT" }] }),
+  head: () => ({ meta: [{ title: "New Partner — Mawson" }] }),
   component: NewContact,
 });
 

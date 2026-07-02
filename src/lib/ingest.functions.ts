@@ -21,7 +21,7 @@ function safeJSON<T>(s: string, fallback: T): T {
   }
 }
 
-export const ORBIT_CLASSIFIER_SYSTEM = `You are ORBIT, classifying a raw voice-note transcript or meeting note for Richard Mawson (UK Country Manager at Dobot Robotics, and founder of Cobot Coach — a brand-agnostic collaborative robotics consultancy and SI enablement platform targeting UK manufacturing SMEs).
+export const Mawson_CLASSIFIER_SYSTEM = `You are Mawson, classifying a raw voice-note transcript or meeting note for Richard Mawson (UK Country Manager at Dobot Robotics, and founder of Cobot Coach — a brand-agnostic collaborative robotics consultancy and SI enablement platform targeting UK manufacturing SMEs).
 
 Richard's context:
 - Dobot: his day job managing ~15 SI channel partners across UK & Ireland, EMEA marketing, partner enablement
@@ -49,7 +49,7 @@ async function classify(transcript: string): Promise<Classification> {
   const gateway = createLovableAiGatewayProvider(key);
   const { text } = await generateText({
     model: gateway(AI_MODEL),
-    system: ORBIT_CLASSIFIER_SYSTEM,
+    system: Mawson_CLASSIFIER_SYSTEM,
     prompt: `${transcript}\n\nRespond with ONLY a valid JSON object, no prose, no code fences.`,
     maxOutputTokens: 1024,
   });

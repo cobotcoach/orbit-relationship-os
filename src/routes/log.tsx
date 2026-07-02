@@ -35,7 +35,7 @@ function LogPage() {
   });
 
   return (
-    <Shell title="Capture Log" subtitle="Audit trail of every capture entering ORBIT. Refreshes every 30s.">
+    <Shell title="Capture Log" subtitle="Audit trail of every capture entering Mawson. Refreshes every 30s.">
       <div className="max-w-3xl mx-auto space-y-2">
         {rows.length === 0 && <div className="text-sm text-muted-foreground p-6 text-center">No captures yet.</div>}
         {rows.map(r => <LogRow key={r.id} row={r} />)}

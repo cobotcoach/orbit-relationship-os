@@ -9,7 +9,7 @@ import { IDEA_MODES, type Idea } from "@/lib/types";
 import { useMode } from "@/lib/mode-context";
 
 export const Route = createFileRoute("/ideas")({
-  head: () => ({ meta: [{ title: "ORBIT — Ideas" }] }),
+  head: () => ({ meta: [{ title: "Mawson — Ideas" }] }),
   component: IdeasPage,
 });
 
