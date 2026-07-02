@@ -75,7 +75,7 @@ export function ModeToggle({ className = "" }: { className?: string }) {
             className="px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
             style={{
               background: active ? meta.accent : "transparent",
-              color: active ? "#0c0d10" : "var(--muted-fg)",
+              color: active ? "#ffffff" : "var(--muted-fg)",
               minHeight: 32,
             }}
           >
