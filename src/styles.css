@@ -42,27 +42,27 @@
 :root {
   --radius: 0.875rem;
 
-  /* Cockpit dark surfaces */
-  --background:  #0c0d10;
-  --surface-1:   #13151a;
-  --surface-2:   #1a1d24;
-  --surface-3:   #20242e;
-  --foreground:  #f0f2f7;
-  --muted-fg:    #8892a4;
-  --border:      rgba(255,255,255,0.08);
+  /* Mawson light cockpit surfaces */
+  --background:  #f8f7f4;
+  --surface-1:   #ffffff;
+  --surface-2:   #f1efe9;
+  --surface-3:   #e6e3db;
+  --foreground:  #0c0d10;
+  --muted-fg:    #64707f;
+  --border:      rgba(12,13,16,0.10);
 
-  /* Cobot Coach amber identity */
-  --primary:     #f59e0b;
-  --primary-fg:  #0c0d10;
+  /* Cobot Coach pink identity */
+  --primary:     #ec4899;
+  --primary-fg:  #ffffff;
 
   /* Electric teal for completion / success */
-  --success:     #10d9a0;
+  --success:     #059669;
 
   /* Status */
-  --urgent:      #ef4444;
-  --warning:     #f59e0b;
-  --info:        #3b82f6;
-  --wild:        #a855f7;
+  --urgent:      #dc2626;
+  --warning:     #d97706;
+  --info:        #2563eb;
+  --wild:        #9333ea;
 }
 
 @layer base {
